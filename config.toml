@@ -27,3 +27,12 @@ enableRobotsTXT = true
 	changefreq = "weekly"
 	filename = "sitemap.xml"
 	priority = 0.5
+
+# https://gohugo.io/getting-started/configuration-markup
+# https://xyproto.github.io/splash/docs/all.html
+[markup]
+	[markup.highlight]
+		lineNos = true
+		lineNumbersInTable = true
+		style = "pygments"
+		tabWidth = 4
