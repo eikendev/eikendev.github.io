@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html lang="{{ with .Site.LanguageCode }}{{ . }}{{ else }}en-us{{ end }}" dir="ltr" class="h-100">
+	<head>
+		{{- partial "head.html" . -}}
+	</head>
+
+	<body class="d-flex flex-column h-100 bg-light">
+		<nav>
+			{{- partial "nav.html" . -}}
+		</nav>
+
+		<header class="jumbotron text-center bg-white mb-0">
+			{{- partial "header.html" . -}}
+		</header>
+
+		<main class="flex-shrink-0">
+			{{- block "main" . }}{{- end }}
+		</main>
+
+		<footer class="footer mt-auto py-3 bg-white">
+			{{- partial "footer.html" . -}}
+		</footer>
+
+		{{- partial "scripts.html" . -}}
+	</body>
+</html>

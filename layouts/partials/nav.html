@@ -1,0 +1,29 @@
+<div class="collapse bg-dark" id="navbarHeader">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-8 col-md-7 py-4">
+				<h4 class="text-white">About</h4>
+				<p class="text-muted">This website contains information about my public repositories, some of which may not be actively maintained any longer. If you have questions regarding any of these projects, feel free to contact me.</p>
+			</div>
+			<div class="col-sm-4 offset-md-1 py-4">
+				<h4 class="text-white">Contact</h4>
+				<ul class="list-unstyled">
+					<li><a href="https://eikenberg.at/" class="text-white"><i class="fas fa-user"></i> eikenberg.at</a></li>
+					<li><a href="https://twitter.com/eikendev" class="text-white"><i class="fab fa-twitter"></i> eikendev</a></li>
+					<li><a href="#" class="text-white cryptedmail" data-name="hello" data-domain="eiken" data-tld="dev" onclick="window.location.href = 'mailto:' + this.dataset.name + '@' + this.dataset.domain + '.' + this.dataset.tld; return false;"><i class="fas fa-envelope"></i> </a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="navbar navbar-dark bg-dark shadow-sm">
+	<div class="container d-flex justify-content-between">
+		<a href="#" class="navbar-brand d-flex align-items-center">
+			<img src="{{ "img/logo.png" | absURL }}" alt="" id="logo" class="mr-2" />
+			<strong>{{ $.Site.Params.author }}</strong>
+		</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+</div>

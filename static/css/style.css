@@ -1,0 +1,15 @@
+html {
+	overflow-y: scroll;
+}
+
+#logo {
+	height: 30px;
+}
+
+.cryptedmail:after {
+	content: attr(data-name) "@" attr(data-domain) "." attr(data-tld);
+}
+
+.jumbotron .container {
+	max-width: 50rem;
+}
