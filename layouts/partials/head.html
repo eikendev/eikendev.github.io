@@ -2,8 +2,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="author" content="{{ $.Site.Params.author }}" />
-<meta name="description" content="{{if .IsHome}}{{ $.Site.Params.description }}{{else}}{{.Description}}{{end}}">
-<meta name="keywords" content="{{if or (.IsHome) (eq .Params.tags nil)}}{{ $.Site.Params.keywords }}{{else}}{{ delimit .Params.Tags ", " }}{{end}}" />
+<meta name="description" content="{{if .IsHome}}{{ $.Site.Params.description }}{{else if (eq .Params.Description nil)}}{{.Summary}}{{else}}{{.Params.Description}}{{end}}">
+<meta name="keywords" content="{{if or (.IsHome) (eq .Params.Tags nil)}}{{ $.Site.Params.keywords }}{{else}}{{ delimit .Params.Tags ", " }}{{end}}" />
 <meta name="google-site-verification" content="l5K7foum_XAhB2F38FfSsqAj7VnpqbN2iKx3DMiqRqw" />
 
 <meta name="twitter:card" content="summary" />
@@ -11,7 +11,7 @@
 <meta name="twitter:creator" content="@{{ $.Site.Params.twitter }}" />
 <meta property="og:url" content="{{.Permalink}}" />
 <meta property="og:title" content="{{.Title}}" />
-<meta property="og:description" content="{{if .IsHome}}{{ $.Site.Params.description }}{{else if (eq .Description nil)}}{{.Description}}{{else}}{{.Summary}}{{end}}" />
+<meta property="og:description" content="{{if .IsHome}}{{ $.Site.Params.description }}{{else if (eq .Params.Description nil)}}{{.Summary}}{{else}}{{.Params.Description}}{{end}}" />
 
 <title>{{ if not .IsHome }}{{ with .Title }}{{ . }} | {{end}}{{end}}{{ $.Site.Title }}</title>
 
