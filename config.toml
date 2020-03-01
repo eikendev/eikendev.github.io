@@ -1,3 +1,28 @@
 baseURL = "https://eiken.dev/"
 languageCode = "en-us"
 title = "eikendev"
+footnoteReturnLinkContents = "↩"
+rssLimit = 20
+disableHugoGeneratorInject = true
+enableRobotsTXT = true
+
+[taxonomies]
+	tag = "tags"
+
+[params]
+	author = "eikendev"
+	description = "Public projects and source code by eikendev."
+
+# https://gohugo.io/templates/rss/
+[author]
+	name = "eikendev"
+	email = "hello@eiken.dev"
+
+[permalinks]
+	posts = "/:year/:month/:title/"
+
+# https://gohugo.io/templates/sitemap-template/
+[sitemap]
+	changefreq = "weekly"
+	filename = "sitemap.xml"
+	priority = 0.5
