@@ -1,6 +1,8 @@
-language: go
-install:
-- go get github.com/gohugoio/hugo
+os: linux
+addons:
+  snaps:
+    - name: hugo
+      channel: extended
 script:
 - hugo
 deploy:
