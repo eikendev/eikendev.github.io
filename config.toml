@@ -12,6 +12,7 @@ enableRobotsTXT = true
 [params]
 	author = "eikendev"
 	description = "Public projects and source code by eikendev."
+	keywords = "coding, git, projects, programming"
 
 # https://gohugo.io/templates/rss/
 [author]
