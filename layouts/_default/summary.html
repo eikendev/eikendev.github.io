@@ -1,0 +1,12 @@
+<article class="card mt-4 mb-4 shadow-sm">
+	<div class="card-header">
+	  	<h4 class="mb-0">
+	  		<a class="text-dark" href="{{.Permalink}}">{{.Title }}</a>
+	  	</h4>
+	</div>
+	<div class="card-body">
+	  	<p class="small"><time>{{ .Date.Format "January 2, 2006" }}</time></p>
+	  	<p class="card-text">{{.Summary}}</p>
+	  	<a href="{{.Permalink}}" class="btn btn-xs btn-primary float-right">Read more</a>
+	</div>
+</article>
