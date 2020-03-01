@@ -1,93 +1,139 @@
 {{ define "main" }}
 
-<div class="py-5 bg-light">
-	<div class="container">
-		<div class="row">
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title">Gitool</h5>
-						<div class="mb-1">
-							<span class="badge badge-primary">MIT</span>
-							<span class="badge badge-secondary">Python</span>
-						</div>
-						<p class="card-text">Managing multiple <a href="https://git-scm.com/">Git</a> repositories across several devices turns out to be difficult, especially if one cares about configuration consistency. With this project my aim is to provide a little helper utility that allows for dumping and comparing git configurations in bulk.</p>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="btn-group">
-								<a href="https://github.com/eikendev/gitool" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
-								<a href="https://github.com/eikendev/gitool/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+<section class="my-5">
+	<div class="py-5 bg-light">
+		<div class="container">
+			<h2 class="mb-3">Recent posts</h2>
+			<div class="list-group">
+				{{ range first 5 (where .Site.RegularPages "Section" "posts").ByDate }}
+					<a class="list-group-item list-group-item-action" href="{{ .Permalink }}">
+						{{- .Title -}}
+						{{ with .Params.tags }}
+						{{ range . }}<span class="badge badge-secondary badge-pill ml-1 float-right">{{.}}</span>{{ end }}
+						{{ end }}
+					</a>
+				{{ end }}
+			</div>
+			<div class="text-center mt-3">
+				{{ with .Site.GetPage "section" "posts" }}
+				<a href="{{.Permalink}}" class="btn btn-primary my-2"><i class="far fa-newspaper fa-lg mr-2"></i>More posts</a>
+				{{ end  }}
+			</div>
+		</div>
+	</div>
+</section>
+
+<hr />
+
+<section class="my-5">
+	<div class="py-5 bg-light">
+		<div class="container">
+			<h2 class="mb-3">Current projects</h2>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">dotfiles</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">Bash</span>
+								<span class="badge badge-secondary">Vim script</span>
+							</div>
+							<p class="card-text">Regarding productivity, the best thing one can do is customize the environment so repeated tasks can be automated. I've been customizing my configuration files for many years, and hence this project will probably be eternal for me.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/dotfiles" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/dotfiles/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title">RfcDL</h5>
-						<div class="mb-1">
-							<span class="badge badge-primary">MIT</span>
-							<span class="badge badge-secondary">Python</span>
-						</div>
-						<p class="card-text">When researching a specific topic it occures to me that I end up reading many <a href="https://www.ietf.org/standards/rfcs/">RFCs</a>. Hence, I like to keep a local copy on my machine. Using this tool one can download all RFCs in a matter of seconds and update their library comfortably. This was my first project using Python's <code>asyncio</code> library.</p>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="btn-group">
-								<a href="https://github.com/eikendev/rfcdl" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
-								<a href="https://github.com/eikendev/rfcdl/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">Gitool</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">MIT</span>
+								<span class="badge badge-secondary">Python</span>
+							</div>
+							<p class="card-text">Managing multiple <a href="https://git-scm.com/">Git</a> repositories across several devices turns out to be difficult, especially if one cares about configuration consistency. With this project my aim is to provide a little helper utility that allows for dumping and comparing git configurations in bulk.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/gitool" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/gitool/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title">ttrss</h5>
-						<div class="mb-1">
-							<span class="badge badge-primary">MIT</span>
-							<span class="badge badge-secondary">Python</span>
-						</div>
-						<p class="card-text">Reading news is essential to keep up with technology, and my proven method is using <a href="https://tt-rss.org/">Tiny Tiny RSS</a> for doing so. However, to be able to read my news offline I had to come up with this project in order to download unread articles to my machine.</p>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="btn-group">
-								<a href="https://github.com/eikendev/ttrss" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
-								<a href="https://github.com/eikendev/ttrss/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">RfcDL</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">MIT</span>
+								<span class="badge badge-secondary">Python</span>
+							</div>
+							<p class="card-text">When researching a specific topic it occures to me that I end up reading many <a href="https://www.ietf.org/standards/rfcs/">RFCs</a>. Hence, I like to keep a local copy on my machine. Using this tool one can download all RFCs in a matter of seconds and update their library comfortably. This was my first project using Python's <code>asyncio</code> library.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/rfcdl" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/rfcdl/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title">Turs</h5>
-						<div class="mb-1">
-							<span class="badge badge-primary">MIT</span>
-							<span class="badge badge-secondary">Rust</span>
-						</div>
-						<p class="card-text">On the command line the prompt is the one thing you will always want to rely on. Since I wanted my prompt to provide very custom functionality and performance, I concluded it's worth implementing it as a separate program. Thankfully, <a href="https://github.com/xcambar/purs">Purs</a> served as a good starting point.</p>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="btn-group">
-								<a href="https://github.com/eikendev/turs" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
-								<a href="https://github.com/eikendev/turs/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">ttrss</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">MIT</span>
+								<span class="badge badge-secondary">Python</span>
+							</div>
+							<p class="card-text">Reading news is essential to keep up with technology, and my proven method is using <a href="https://tt-rss.org/">Tiny Tiny RSS</a> for doing so. However, to be able to read my news offline I had to come up with this project in order to download unread articles to my machine.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/ttrss" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/ttrss/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
-					<div class="card-body">
-						<h5 class="card-title">vim-textobj-names</h5>
-						<div class="mb-1">
-							<span class="badge badge-primary">MIT</span>
-							<span class="badge badge-secondary">Vim script</span>
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">Turs</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">MIT</span>
+								<span class="badge badge-secondary">Rust</span>
+							</div>
+							<p class="card-text">On the command line the prompt is the one thing you will always want to rely on. Since I wanted my prompt to provide very custom functionality and performance, I concluded it's worth implementing it as a separate program. Thankfully, <a href="https://github.com/xcambar/purs">Purs</a> served as a good starting point.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/turs" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/turs/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
+							</div>
 						</div>
-						<p class="card-text">Vim is an awesome text editor and with <a href="https://neovim.io/">Neovim</a> things have gotten even better. Still, I'm missing some features - one of which this project implements. By using my plugin editing variable names becomes a lot easier.</p>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="btn-group">
-								<a href="https://github.com/eikendev/vim-textobj-names" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
-								<a href="https://github.com/eikendev/vim-textobj-names/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="card mb-4 shadow-sm">
+						<div class="card-body">
+							<h5 class="card-title">vim-textobj-names</h5>
+							<div class="mb-1">
+								<span class="badge badge-primary">MIT</span>
+								<span class="badge badge-secondary">Vim script</span>
+							</div>
+							<p class="card-text">Vim is an awesome text editor and with <a href="https://neovim.io/">Neovim</a> things have gotten even better. Still, I'm missing some features - one of which this project implements. By using my plugin editing variable names becomes a lot easier.</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div class="btn-group">
+									<a href="https://github.com/eikendev/vim-textobj-names" class="btn btn-sm btn-outline-secondary"><i class="fab fa-github"></i> View</a>
+									<a href="https://github.com/eikendev/vim-textobj-names/archive/master.zip" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -95,6 +141,6 @@
 			</div>
 		</div>
 	</div>
-</div>
+</section>
 
 {{ end }}
