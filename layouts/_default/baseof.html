@@ -10,9 +10,11 @@
 			{{- partial "nav.html" . -}}
 		</nav>
 
+		{{ if .IsHome }}
 		<header class="jumbotron text-center bg-white mb-0">
 			{{- partial "header.html" . -}}
 		</header>
+		{{end}}
 
 		<main class="flex-shrink-0">
 			{{- block "main" . }}{{- end }}
