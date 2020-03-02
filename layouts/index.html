@@ -5,7 +5,7 @@
 		<div class="container">
 			<h2 class="mb-3">Recent posts</h2>
 			<div class="list-group">
-				{{ range first 5 (where .Site.RegularPages "Section" "posts").ByDate }}
+				{{ range first 5 (where .Site.RegularPages "Section" "blog").ByDate }}
 					<a class="list-group-item list-group-item-action" href="{{ .Permalink }}">
 						{{- .Title -}}
 						{{ with .Params.tags }}
@@ -15,7 +15,7 @@
 				{{ end }}
 			</div>
 			<div class="text-center mt-3">
-				{{ with .Site.GetPage "section" "posts" }}
+				{{ with .Site.GetPage "section" "blog" }}
 				<a href="{{.Permalink}}" class="btn btn-primary my-2"><i class="far fa-newspaper fa-lg mr-2"></i>More posts</a>
 				{{ end  }}
 			</div>

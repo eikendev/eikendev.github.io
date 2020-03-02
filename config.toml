@@ -21,7 +21,7 @@ enableRobotsTXT = true
 	email = "hello@eiken.dev"
 
 [permalinks]
-	posts = "/:year/:month/:title/"
+	blog = "blog/:year/:month/:title/"
 
 # https://gohugo.io/templates/sitemap-template/
 [sitemap]
