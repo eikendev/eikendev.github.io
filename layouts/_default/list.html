@@ -1,8 +1,8 @@
 {{ define "main" }}
 
-<section class="section">
+<section class="my-4">
 	<div class="container">
-		<div class="row mt-4 mb-4">
+		<div class="column">
 			{{ range .Data.Pages }}
 			{{ .Render "summary" }}
 			{{ end }}
