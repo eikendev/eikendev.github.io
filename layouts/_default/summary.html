@@ -5,8 +5,13 @@
 	  	</h4>
 	</div>
 	<div class="card-body">
-	  	<p class="small"><time>{{ .Date.Format "January 2, 2006" }}</time></p>
+		{{ with .Params.tags }}
+		<div>
+		{{ range . }}<span class="badge badge-secondary badge-pill mr-1 mb-3">{{.}}</span>{{ end }}
+		</div>
+		{{ end }}
+	  	<p class="small text-muted"><time>{{ .Date.Format "January 2, 2006" }}</time></p>
 	  	<p class="card-text">{{.Summary}}</p>
-	  	<a href="{{.Permalink}}" class="btn btn-xs btn-primary float-right">Read more</a>
+	  	<a href="{{.Permalink}}" class="btn btn-xs btn-primary float-right">Continue reading</a>
 	</div>
 </article>
