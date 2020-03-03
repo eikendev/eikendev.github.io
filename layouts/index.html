@@ -6,10 +6,14 @@
 		<div class="list-group">
 			{{ range first 5 (where .Site.RegularPages "Section" "blog").ByDate }}
 				<a class="list-group-item list-group-item-action" href="{{ .Permalink }}">
-					{{- .Title -}}
-					{{ with .Params.tags }}
-					{{ range . }}<span class="badge badge-secondary badge-pill ml-1 float-right">{{.}}</span>{{ end }}
-					{{ end }}
+					<div class="d-flex flex-row align-items-center flex-wrap">
+						<div class="flex-grow-1">{{- .Title -}}</div>
+						<div>
+							{{ with .Params.tags }}
+							{{ range . }}<span class="badge badge-secondary badge-pill align-middle">{{.}}</span> {{ end }}
+							{{ end }}
+						</div>
+					</div>
 				</a>
 			{{ end }}
 		</div>
