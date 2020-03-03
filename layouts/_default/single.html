@@ -8,7 +8,7 @@
 				<h1 class="mb-3">{{.Title}}</h1>
 				{{ with .Params.tags }}
 				<div>
-				{{ range . }}<span class="badge badge-secondary badge-pill mr-1 mb-5">{{.}}</span>{{ end }}
+					{{ range . }}<a href="{{ "tags" | absURL}}/{{ . | urlize }}" class="badge badge-secondary badge-pill mr-1 mb-5">{{.}}</a>{{ end }}
 				</div>
 				{{ end }}
 				{{.Content }}

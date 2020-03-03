@@ -7,7 +7,7 @@
 	<div class="card-body">
 		{{ with .Params.tags }}
 		<div>
-		{{ range . }}<span class="badge badge-secondary badge-pill mr-1 mb-3">{{.}}</span>{{ end }}
+			{{ range . }}<a href="{{ "tags" | absURL}}/{{ . | urlize }}" class="badge badge-secondary badge-pill mr-1 mb-3">{{.}}</a>{{ end }}
 		</div>
 		{{ end }}
 	  	<p class="small text-muted"><time>{{ .Date.Format "January 2, 2006" }}</time></p>
