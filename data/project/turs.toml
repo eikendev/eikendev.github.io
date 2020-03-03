@@ -1,0 +1,7 @@
+Name = "Turs"
+License = "MIT"
+Languages = ["Rust"]
+RepositoryLink = "https://github.com/eikendev/turs"
+RepositoryIcon = "fab fa-github"
+DownloadLink = "https://github.com/eikendev/turs/archive/master.zip"
+Description = "On the command line the prompt is the one thing you will always want to rely on. Since I wanted my prompt to provide very custom functionality and performance, I concluded it's worth implementing it as a separate program. Thankfully, [Purs](https://github.com/xcambar/purs) served as a good starting point."

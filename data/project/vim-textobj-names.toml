@@ -1,0 +1,7 @@
+Name = "vim-textobj-names"
+License = "MIT"
+Languages = ["Vim script"]
+RepositoryLink = "https://github.com/eikendev/vim-textobj-names"
+RepositoryIcon = "fab fa-github"
+DownloadLink = "https://github.com/eikendev/vim-textobj-names/archive/master.zip"
+Description = "Vim is an awesome text editor and with [Neovim](https://neovim.io/) things have gotten even better. Still, I'm missing some features - one of which this project implements. By using my plugin editing variable names becomes a lot easier."

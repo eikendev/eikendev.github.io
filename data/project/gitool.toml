@@ -1,0 +1,7 @@
+Name = "Gitool"
+License = "MIT"
+Languages = ["Python"]
+RepositoryLink = "https://github.com/eikendev/gitool"
+RepositoryIcon = "fab fa-github"
+DownloadLink = "https://github.com/eikendev/gitool/archive/master.zip"
+Description = "Managing multiple [Git](https://git-scm.com/) repositories across several devices turns out to be difficult, especially if one cares about configuration consistency. With this project my aim is to provide a little helper utility that allows for dumping and comparing git configurations in bulk."

@@ -1,0 +1,7 @@
+Name = "RfcDL"
+License = "MIT"
+Languages = ["Python"]
+RepositoryLink = "https://github.com/eikendev/rfcdl"
+RepositoryIcon = "fab fa-github"
+DownloadLink = "https://github.com/eikendev/rfcdl/archive/master.zip"
+Description = "When researching a specific topic it occures to me that I end up reading many [RFCs](https://www.ietf.org/standards/rfcs/). Hence, I like to keep a local copy on my machine. Using this tool one can download all RFCs in a matter of seconds and update their library comfortably. This was my first project using Python's <code>asyncio</code> library."
