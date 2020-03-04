@@ -4,7 +4,6 @@
 <meta name="author" content="{{ $.Site.Params.author }}" />
 <meta name="description" content="{{if .IsHome}}{{ $.Site.Params.description }}{{else if (eq .Params.Description nil)}}{{.Summary}}{{else}}{{.Params.Description}}{{end}}">
 <meta name="keywords" content="{{if or (.IsHome) (eq .Params.Tags nil)}}{{ $.Site.Params.keywords }}{{else}}{{ delimit .Params.Tags ", " }}{{end}}" />
-<meta name="google-site-verification" content="l5K7foum_XAhB2F38FfSsqAj7VnpqbN2iKx3DMiqRqw" />
 
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:site" content="@{{ $.Site.Params.twitter }}" />
