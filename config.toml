@@ -5,6 +5,7 @@ footnoteReturnLinkContents = "↩"
 rssLimit = 20
 disableHugoGeneratorInject = true
 enableRobotsTXT = true
+pluralizelisttitles = false
 
 [taxonomies]
 	tag = "tags"
