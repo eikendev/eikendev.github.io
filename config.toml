@@ -5,6 +5,7 @@ footnoteReturnLinkContents = "↩"
 rssLimit = 20
 disableHugoGeneratorInject = true
 enableRobotsTXT = true
+enableGitInfo = true # Fetch .Lastmod from Git repository.
 pluralizelisttitles = false
 
 [taxonomies]
