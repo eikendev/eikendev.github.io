@@ -1,0 +1,20 @@
+{
+	"name": "eikendev.github.io",
+	"version": "0.0.1",
+	"description": "My personal website",
+	"main": "index.js",
+	"repository": "https://github.com/eikendev/eikendev.github.io",
+	"author": "eikendev <raphael@eiken.dev>",
+	"private": true,
+	"dependencies": {
+		"@fullhuman/postcss-purgecss": "^2.1.0",
+		"autoprefixer": "^9.7.4",
+		"bootstrap": "^4.4.1",
+		"jquery": "^3.4.1",
+		"popper.js": "^1.16.1",
+		"postcss-cli": "^7.1.0"
+	},
+	"browserslist": [
+		"> 1%"
+	]
+}

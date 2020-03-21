@@ -1,11 +1,13 @@
 os: linux
-language: minimal
+language: node_js
 addons:
   snaps:
     - name: hugo
       channel: extended
 script:
 - hugo --minify
+cache:
+  yarn: true
 deploy:
   provider: pages
   skip_cleanup: true

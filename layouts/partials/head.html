@@ -18,5 +18,7 @@
 {{ end -}}
 
 <link rel="shortcut icon" type="image/x-icon" href="{{ "favicon.ico" | absURL }}" />
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="stylesheet" type="text/css" href="{{ "css/style.css" | absURL }}" />
+
+{{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true "includePaths" (slice "node_modules")) }}
+{{ $style := resources.Get "scss/main.scss" | toCSS $options | postCSS (dict "config" "./assets/scss/postcss.config.js") | fingerprint "sha384" }}
+<link rel="stylesheet" href="{{ $style.Permalink }}" integrity="{{ $style.Data.Integrity }}">
