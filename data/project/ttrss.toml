@@ -4,4 +4,4 @@ Languages = ["Python"]
 RepositoryLink = "https://github.com/eikendev/ttrss"
 RepositoryIcon = "fab fa-github"
 DownloadLink = "https://github.com/eikendev/ttrss/archive/master.zip"
-Description = "Reading news is essential to keep up with technology, and my proven method is using [Tiny Tiny RSS](https://tt-rss.org/) for doing so. However, to be able to read my news offline I had to come up with this project in order to download unread articles to my machine."
+Description = "Reading news is essential to keep up with modern technology. My proven method for doing so is using [Tiny Tiny RSS](https://tt-rss.org/), a powerful news feed aggregator. However, to be able to read my news offline I had to come up with this project in order to download unread articles to my machine."
