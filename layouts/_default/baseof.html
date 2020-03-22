@@ -5,13 +5,13 @@
 		{{- partial "head.html" . -}}
 	</head>
 
-	<body class="d-flex flex-column h-100 bg-light">
+	<body class="d-flex flex-column h-100">
 		<nav>
 			{{- partial "nav.html" . -}}
 		</nav>
 
 		{{ if .IsHome }}
-		<header class="jumbotron text-center bg-white mb-0">
+		<header class="jumbotron text-center mb-0">
 			{{- partial "header.html" . -}}
 		</header>
 		{{end}}
@@ -20,7 +20,7 @@
 			{{- block "main" . }}{{- end }}
 		</main>
 
-		<footer class="footer mt-auto py-3 bg-white">
+		<footer class="footer mt-auto py-3 bg-dark">
 			{{- partial "footer.html" . -}}
 		</footer>
 

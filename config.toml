@@ -37,5 +37,5 @@ pluralizelisttitles = false
 	[markup.highlight]
 		lineNos = true
 		lineNumbersInTable = true
-		style = "pygments"
+		style = "drakula"
 		tabWidth = 4

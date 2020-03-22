@@ -1,6 +1,6 @@
 {{ define "main" }}
 
-<section class="py-5 bg-dark text-white">
+<section class="py-5 bg-dark">
 	<div class="container">
 		<h2 class="text-center mb-5">Recent posts</h2>
 		<div class="list-group">
@@ -47,8 +47,8 @@
 						<p class="card-text">{{ .Description | markdownify }}</p>
 						<div class="d-flex justify-content-between align-items-center">
 							<div class="btn-group">
-								<a href="{{ .RepositoryLink }}" class="btn btn-sm btn-outline-secondary"><i class="mr-1 {{ .RepositoryIcon }}"></i>View</a>
-								<a href="{{ .DownloadLink }}" class="btn btn-sm btn-outline-secondary"><i class="mr-1 fas fa-download"></i>Download</a>
+								<a href="{{ .RepositoryLink }}" class="btn btn-sm btn-outline-light"><i class="mr-1 {{ .RepositoryIcon }}"></i>View</a>
+								<a href="{{ .DownloadLink }}" class="btn btn-sm btn-outline-light"><i class="mr-1 fas fa-download"></i>Download</a>
 							</div>
 						</div>
 					</div>
