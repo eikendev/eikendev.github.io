@@ -1,4 +1,4 @@
-$red: #d24530;
+$red: #902e1f;
 $yellow: #ffc107;
 $green: #28a745;
 $cyan: #17a2b8;
@@ -14,6 +14,17 @@ $darkgray7: mix($darkgray0, white, 100%-14%);
 $darkgray8: mix($darkgray0, white, 100%-15%);
 $darkgray9: mix($darkgray0, white, 100%-16%);
 
+$gray0: mix($darkgray0, white, 100%-20%);
+$gray1: mix($darkgray0, white, 100%-25%);
+$gray2: mix($darkgray0, white, 100%-30%);
+$gray3: mix($darkgray0, white, 100%-35%);
+$gray4: mix($darkgray0, white, 100%-40%);
+$gray5: mix($darkgray0, white, 100%-45%);
+$gray6: mix($darkgray0, white, 100%-50%);
+$gray7: mix($darkgray0, white, 100%-55%);
+$gray8: mix($darkgray0, white, 100%-60%);
+$gray9: mix($darkgray0, white, 100%-65%);
+
 $white: #fff;
 $black: #000;
 $gray-100: #f8f9fa;
@@ -28,13 +39,23 @@ $gray-900: #212529;
 
 $theme-colors: (
 	primary: $red,
-	secondary: $gray-600,
+	secondary: $gray-700,
 	success: $green,
 	info: $cyan,
 	warning: $yellow,
 	danger: $red,
 	light: $gray-300,
 	dark: $gray-800,
+	gray0: $gray0,
+	gray1: $gray1,
+	gray2: $gray2,
+	gray3: $gray3,
+	gray4: $gray4,
+	gray5: $gray5,
+	gray6: $gray6,
+	gray7: $gray7,
+	gray8: $gray8,
+	gray9: $gray9,
 	darkgray0: $darkgray0,
 	darkgray1: $darkgray1,
 	darkgray2: $darkgray2,
@@ -60,11 +81,11 @@ $colors: (
 $theme-color-interval: 8%;
 
 $body-bg: $darkgray0;
-$body-color: $gray-100;
+$body-color: $gray-200;
 
-$link-color: theme-color('primary');
+$link-color: lighten(theme-color('primary'), 15%);
 $link-decoration: none;
-$link-hover-color: lighten($link-color, 15%);
+$link-hover-color: lighten($link-color, 10%);
 $link-hover-decoration: underline;
 
 $border-radius: 2px;
@@ -180,7 +201,7 @@ $pagination-disabled-border-color: #ddd;
 
 $jumbotron-bg: transparent;
 
-$card-border-color: rgba($black, 0.125);
+$card-border-color: rgba($white, 0.1);
 $card-cap-bg: $darkgray5;
 $card-bg: $darkgray1;
 
@@ -204,12 +225,12 @@ $modal-header-border-color: $gray-800;
 $progress-bg: $gray-800;
 $progress-bar-color: $gray-900;
 
-$list-group-bg: $gray-800;
-$list-group-border-color: rgba($black, 0.125);
-$list-group-hover-bg: darken($list-group-bg, 5%);
+$list-group-bg: $darkgray3;
+$list-group-border-color: rgba($white, 0.1);
+$list-group-hover-bg: lighten($list-group-bg, 5%);
 $list-group-disabled-color: lighten($list-group-bg, 5%);
 $list-group-action-color: inherit;
-$list-group-action-active-bg: darken($list-group-bg, 5%);
+$list-group-action-active-bg: lighten($list-group-bg, 5%);
 
 $thumbnail-bg: $body-bg;
 

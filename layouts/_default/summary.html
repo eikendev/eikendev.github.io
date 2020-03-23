@@ -1,9 +1,9 @@
 <article class="card my-4 shadow-sm">
-	<div class="card-header">
-	  	<h4 class="mb-0">
-	  		<a class="text-white" href="{{.Permalink}}">{{.Title }}</a>
-	  	</h4>
-	</div>
+	<a href="{{ .Permalink }}" class="text-reset text-decoration-none">
+		<div class="card-header">
+			<h4 class="card-title mb-0">{{.Title }}</h4>
+		</div>
+	</a>
 	<div class="card-body">
 		{{ with .Params.tags }}
 		<div>
