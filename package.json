@@ -8,7 +8,6 @@
 	"private": true,
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^5.13.0",
-		"@fullhuman/postcss-purgecss": "^2.1.0",
 		"autoprefixer": "^9.7.4",
 		"bootstrap": "^4.4.1",
 		"jquery": "^3.4.1",
