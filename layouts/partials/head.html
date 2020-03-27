@@ -26,5 +26,5 @@
 <meta name="theme-color" content="#111111">
 
 {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true "includePaths" (slice "node_modules")) }}
-{{ $style := resources.Get "scss/main.scss" | toCSS $options | postCSS (dict "config" "./assets/scss/postcss.config.js") | fingerprint "sha384" }}
+{{ $style := resources.Get "css/main.scss" | toCSS $options | postCSS (dict "config" "./assets/css/postcss.config.js") | fingerprint "sha384" }}
 <link rel="stylesheet" href="{{ $style.Permalink }}" integrity="{{ $style.Data.Integrity }}">
