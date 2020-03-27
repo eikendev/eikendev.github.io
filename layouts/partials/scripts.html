@@ -1,8 +1,8 @@
-{{ $script := resources.Get "js/jquery.slim.min.js" | resources.Minify | fingerprint "sha384" }}
+{{ $script_jquery := resources.Get "js/jquery.slim.min.js" }}
+{{ $script_bootstrap := resources.Get "js/bootstrap.bundle.min.js" }}
+{{ $script := slice $script_jquery $script_bootstrap | resources.Concat "js/bundle.js" | resources.Minify | resources.Fingerprint "sha384" }}
 <script src="{{ $script.Permalink }}" integrity="{{ $script.Data.Integrity }}" crossorigin="anonymous"></script>
 
-{{ $script := resources.Get "js/bootstrap.bundle.min.js" | resources.Minify | fingerprint "sha384" }}
-<script src="{{ $script.Permalink }}" integrity="{{ $script.Data.Integrity }}" crossorigin="anonymous"></script>
-
-{{ $script := resources.Get "js/fontawesome.all.min.js" | resources.Minify | fingerprint "sha384" }}
+{{ $script_fontawesome := resources.Get "js/fontawesome.all.min.js" }}
+{{ $script := slice $script_fontawesome | resources.Concat "js/bundle-deferred.js" | resources.Minify | resources.Fingerprint "sha384" }}
 <script defer src="{{ $script.Permalink }}" integrity="{{ $script.Data.Integrity }}" crossorigin="anonymous"></script>
