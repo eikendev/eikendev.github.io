@@ -1,19 +1,28 @@
 {{ define "main" }}
 
-<section class="my-5">
-	<div class="py-5">
-		<div class="container">
-			<article>
-				<p class="text-muted">Published on <time datetime="{{ .PublishDate.Format "2006-01-02T15:04:05Z07:00" }}">{{ .PublishDate.Format "January 02, 2006" }}</time></p>
-				<h1 class="mb-3">{{.Title}}</h1>
-				{{ with .Params.tags }}
-				<div>
-					{{ range . }}<a href="{{ "tags" | absURL}}/{{ . | urlize }}" class="badge badge-secondary badge-pill mr-1 mb-5">{{.}}</a>{{ end }}
-				</div>
-				{{ end }}
-				{{.Content }}
-			</article>
-		</div>
+<section class="py-5">
+	<div class="pt-md-3 pt-lg-5 container">
+		<article>
+			<p class="text-muted">
+				<i class="fas fa-calendar-day mr-2"></i><time datetime="{{ .PublishDate.Format "2006-01-02T15:04:05Z07:00" }}">{{ .PublishDate.Format "January 2, 2006" }}</time>
+				<br />
+				<i class="fas fa-clock mr-2"></i>{{ .ReadingTime }} {{ if eq 1 .ReadingTime }}minute{{ else }}minutes{{ end }}
+			</p>
+			<h1 class="mb-3">{{.Title}}</h1>
+			{{ with .Params.tags }}
+			<div class="mb-5">
+				{{ range . }}<a href="{{ "tags" | absURL}}/{{ . | urlize }}" class="badge badge-secondary badge-pill mr-1">{{.}}</a>{{ end }}
+			</div>
+			{{ end }}
+			{{.Content }}
+		</article>
+	</div>
+</section>
+
+<section class="py-5">
+	<div class="pb-md-3 pb-lg-5 container">
+		<h5 class="text-center">If you liked this article, share it with your friends!</h5>
+		{{- partial "sharing.html" . -}}
 	</div>
 </section>
 
