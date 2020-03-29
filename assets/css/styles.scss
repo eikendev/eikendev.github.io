@@ -13,3 +13,11 @@ html {
 .jumbotron .container {
 	max-width: 50rem;
 }
+
+.mb-clear-lastchild:last-child {
+	margin-bottom: 0 !important;
+}
+
+.mr-clear-lastchild:last-child {
+	margin-right: 0 !important;
+}

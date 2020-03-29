@@ -30,8 +30,8 @@
 		<h2 class="text-center mb-5">Current projects</h2>
 		<div class="row">
 			{{ range $.Site.Data.project }}
-			<div class="col-md-4">
-				<div class="card mb-4 shadow-sm">
+			<div class="col-md-6 col-lg-4 mb-4 mb-clear-lastchild">
+				<div class="card shadow-sm">
 					<div class="card-body">
 						<a href="{{ .RepositoryLink }}" class="text-reset text-decoration-none">
 							<h5 class="card-title">{{ .Name }}</h5>
