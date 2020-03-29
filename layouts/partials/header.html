@@ -1,10 +1,16 @@
+{{ $service1 := dict "name" "GitHub" "href" "https://github.com/eikendev" "color" "primary"   "icon" "fab fa-github" }}
+{{ $service2 := dict "name" "GitLab" "href" "https://gitlab.com/eikendev" "color" "secondary" "icon" "fab fa-gitlab" }}
+{{ $service3 := dict "name" "Gitea"  "href" "https://git.eiken.dev/"      "color" "secondary" "icon" "fas fa-code-branch" }}
+
+{{ $services := slice $service1 $service2 $service3 }}
+
 <div class="container">
 	<h1>Hello world.</h1>
 	<p class="lead text-muted">My name is Raphael. I'm a computer science enthusiast and I like to solve problems related to both software and hardware. On this page you'll find my public coding projects. Feel free to check them out and leave some feedback.</p>
 	<p class="lead text-muted">If you have ideas or want to contribute or collaborate, don't hesitate to contact me.</p>
 	<div>
-		<a href="https://github.com/eikendev" class="btn btn-primary my-2"><i class="fab fa-github fa-lg mr-2"></i>GitHub</a>
-		<a href="https://gitlab.com/eikendev" class="btn btn-secondary my-2"><i class="fab fa-gitlab fa-lg mr-2"></i>GitLab</a>
-		<a href="https://git.eiken.dev/" class="btn btn-secondary my-2"><i class="fas fa-code-branch fa-lg mr-2"></i>Gitea</a>
+		{{ range $services }}
+		<a href="{{ .href }}" class="btn btn-{{ .color }} mt-2 mr-1 mr-clear-lastchild"><i class="{{ .icon }} fa-lg mr-2"></i>{{ .name }}</a>
+		{{ end }}
 	</div>
 </div>

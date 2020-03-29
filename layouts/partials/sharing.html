@@ -1,13 +1,19 @@
 <h5 class="text-center">If you liked this article, share it with your friends!</h5>
 
-<div class="d-flex flex-row align-items-center justify-content-center flex-wrap mt-3 mx-auto">
-	<a class="btn btn-primary mx-1" href="https://twitter.com/intent/tweet?url={{ .Permalink }}&text={{ .Title }}" target="_blank" title="Twitter">
-		<i class="fab fa-twitter mr-2"></i>Twitter
+{{ $service1_link := printf "https://twitter.com/intent/tweet?url=%s&text=%s" .Permalink .Title }}
+{{ $service2_link := printf "https://www.reddit.com/submit?url=%s&title=%s" .Permalink .Title }}
+{{ $service3_link := printf "https://news.ycombinator.com/submitlink?u=%s&t=%s" .Permalink .Title }}
+
+{{ $service1 := dict "name" "Twitter"     "href" $service1_link "color" "primary"   "icon" "fa-twitter" }}
+{{ $service2 := dict "name" "Reddit"      "href" $service2_link "color" "secondary" "icon" "fa-reddit-alien" }}
+{{ $service3 := dict "name" "Hacker News" "href" $service3_link "color" "secondary" "icon" "fa-hacker-news" }}
+
+{{ $services := slice $service1 $service2 $service3 }}
+
+<div class="row justify-content-center">
+	{{ range $services }}
+	<a class="btn btn-{{ .color }} mb-2 mr-2 mr-clear-lastchild" href="{{ .href }}" target="_blank" title="{{ .name }}">
+		<i class="fab {{ .icon }} mr-2"></i>{{ .name }}
 	</a>
-	<a class="btn btn-secondary mx-1" href="https://www.reddit.com/submit?url={{ .Permalink }}&title={{ .Title }}" target="_blank" title="Reddit">
-		<i class="fab fa-reddit-alien mr-2"></i>Reddit
-	</a>
-	<a class="btn btn-secondary mx-1" href="https://news.ycombinator.com/submitlink?u={{ .Permalink }}&t={{ .Title }}" target="_blank" title="Reddit">
-		<i class="fab fa-hacker-news mr-2"></i>Hacker News
-	</a>
+	{{ end }}
 </div>
