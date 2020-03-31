@@ -9,7 +9,7 @@ addons:
     - name: hugo
       channel: extended
 script:
-- hugo --minify
+- make build
 cache:
   yarn: true
 deploy:
