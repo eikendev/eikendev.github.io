@@ -1,0 +1,9 @@
+<canvas id="{{ .Get "id" }}" width="{{ .Get "width" }}" height="{{ .Get "height" }}"></canvas>
+{{ if .Get "id" }}
+<script type="text/javascript">
+	if (typeof ChartjsLoaders === 'undefined') {
+		var ChartjsLoaders = new Array();
+	}
+	ChartjsLoaders.push("{{ .Get "id" }}");
+</script>
+{{ end }}
