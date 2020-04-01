@@ -11,7 +11,7 @@ build:
 server:
 	mkdir -p static/font/mathjax
 	cp node_modules/mathjax/es5/output/chtml/fonts/woff-v2/* static/font/mathjax/
-	hugo server --minify
+	hugo server --minify --buildDrafts
 
 .PHONY: clean
 clean:
