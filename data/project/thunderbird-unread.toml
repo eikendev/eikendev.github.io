@@ -1,0 +1,7 @@
+Name = "Thunderbird Unread"
+License = "ISC"
+Languages = ["Bash"]
+RepositoryLink = "https://github.com/eikendev/thunderbird-unread"
+RepositoryIcon = "fab fa-github"
+DownloadLink = "https://github.com/eikendev/thunderbird-unread/archive/master.zip"
+Description = "After using [Neomutt](https://www.neomutt.org/) together with [Notmuch](https://notmuchmail.org/) for quite a while, I switched back to [Thunderbird](https://www.thunderbird.net/) for higher reliability. However, Thunderbird is not really scriptable, so I had to come up with a way to at least show me very basic status information for my email accounts."
