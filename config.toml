@@ -39,3 +39,9 @@ pygmentsUseClasses=true
 		lineNos = true
 		lineNumbersInTable = true
 		tabWidth = 4
+    [markup.goldmark.extensions]
+        footnote = true
+        strikethrough = true
+        table = true
+        taskList = true
+        typographer = true

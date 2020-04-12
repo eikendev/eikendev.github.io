@@ -21,3 +21,8 @@ html {
 .mr-clear-lastchild:last-child {
 	margin-right: 0 !important;
 }
+
+// Prevent long expressions to stretch the width.
+.MathJax {
+	overflow-x: auto !important;
+}

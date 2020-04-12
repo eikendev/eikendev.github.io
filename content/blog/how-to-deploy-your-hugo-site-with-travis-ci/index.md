@@ -1,7 +1,6 @@
 ---
 title: "How to Deploy Your Hugo Site With Travis CI"
 date: 2020-03-01T18:37:18+01:00
-draft: false
 tags: ["hugo", "travis", "github"]
 ---
 
