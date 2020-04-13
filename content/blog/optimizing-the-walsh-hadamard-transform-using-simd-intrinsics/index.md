@@ -37,7 +37,7 @@ We're given a vector \\(x\\) with eight doubles, and want to transform it using 
         1 &  1 &  1 &  1 & -1 & -1 & -1 & -1 \\\\
         1 & -1 &  1 & -1 & -1 &  1 & -1 &  1 \\\\
         1 &  1 & -1 & -1 & -1 & -1 &  1 &  1 \\\\
-        1 & -1 & -1 &  1 & -1 &  1 &  1 & -1 \\\\
+        1 & -1 & -1 &  1 & -1 &  1 &  1 & -1
 	\end{bmatrix}
 	\cdot
 	\begin{bmatrix}
@@ -48,7 +48,7 @@ We're given a vector \\(x\\) with eight doubles, and want to transform it using 
         x_4 \\\\
         x_5 \\\\
         x_6 \\\\
-        x_7 \\\\
+        x_7
 	\end{bmatrix}
 \\]
 
@@ -59,7 +59,7 @@ The Walsh-Hadamard transform can be defined as
 	H_m =
 	\begin{bmatrix}
         H_{m-1} & H_{m-1} \\\\
-        H_{m-1} & -H_{m-1} \\\\
+        H_{m-1} & -H_{m-1}
 	\end{bmatrix}
 \\]
 where \\(H_0 = 1\\) and \\(m > 0\\).
@@ -250,7 +250,7 @@ In full verbosity, here are the complete matrices for that.
 		1 &    &    &    & -1 &    &    &    \\\\
 		  &  1 &    &    &    & -1 &    &    \\\\
 		  &    &  1 &    &    &    & -1 &    \\\\
-		  &    &    &  1 &    &    &    & -1 \\\\
+		  &    &    &  1 &    &    &    & -1
 	\end{bmatrix}
 	\quad
 	T_2 =
@@ -262,7 +262,7 @@ In full verbosity, here are the complete matrices for that.
 		  &    &    &    &  1 &    &  1 &    \\\\
 		  &    &    &    &    &  1 &    &  1 \\\\
 		  &    &    &    &  1 &    & -1 &    \\\\
-		  &    &    &    &    &  1 &    & -1 \\\\
+		  &    &    &    &    &  1 &    & -1
 	\end{bmatrix}
 	\quad
 	T_3 =
@@ -274,7 +274,7 @@ In full verbosity, here are the complete matrices for that.
 		  &    &    &    &  1 &  1 &    &    \\\\
 		  &    &    &    &  1 & -1 &    &    \\\\
 		  &    &    &    &    &    &  1 &  1 \\\\
-		  &    &    &    &    &    &  1 & -1 \\\\
+		  &    &    &    &    &    &  1 & -1
 	\end{bmatrix}
 \\]
 
@@ -411,7 +411,7 @@ If you're not that familiar with matrix multiplication, here is what the transfo
 		x_0 - x_4 \\\\
 		x_1 - x_5 \\\\
 		x_2 - x_6 \\\\
-		x_3 - x_7 \\\\
+		x_3 - x_7
 	\end{bmatrix}
 \\]
 More informally speaking, the lower half of the output is just the higher four doubles added to the lower ones, and the upper half is the higher four doubles subtracted from the lower ones.
@@ -447,7 +447,7 @@ Again, let me show you what we need to calculate.
 		x_4 + x_6 \\\\
 		x_5 + x_7 \\\\
 		x_4 - x_6 \\\\
-		x_5 - x_7 \\\\
+		x_5 - x_7
 	\end{bmatrix}
 \\]
 
@@ -483,7 +483,7 @@ For completeness, here is the calculation in vector form.
 		x_4 + x_5 \\\\
 		x_4 - x_5 \\\\
 		x_6 + x_7 \\\\
-		x_6 - x_7 \\\\
+		x_6 - x_7
 	\end{bmatrix}
 \\]
 
