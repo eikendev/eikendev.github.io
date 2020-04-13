@@ -1,6 +1,6 @@
 ---
 title: "Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics"
-date: 2020-03-31T20:58:27+02:00
+date: 2020-04-13T00:58:27+02:00
 tags: ["performance", "simd", "intrinsics"]
 chartjs: true
 mathjax: true
