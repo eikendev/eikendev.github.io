@@ -28,7 +28,7 @@ Even if Intel® AVX-512 instructions are supported on this chip, we'll be limiti
 Alright, so what is the task?
 We're given a vector \\(x\\) with eight doubles, and want to transform it using the Walsh-Hadamard matrix \\(H_8\\).
 \\[
-	H_8 \times x =
+	H_8 \cdot x =
 	\begin{bmatrix}
         1 &  1 &  1 &  1 &  1 &  1 &  1 &  1 \\\\
         1 & -1 &  1 & -1 &  1 & -1 &  1 & -1 \\\\
@@ -39,7 +39,17 @@ We're given a vector \\(x\\) with eight doubles, and want to transform it using 
         1 &  1 & -1 & -1 & -1 & -1 &  1 &  1 \\\\
         1 & -1 & -1 &  1 & -1 &  1 &  1 & -1 \\\\
 	\end{bmatrix}
-	\times x
+	\cdot
+	\begin{bmatrix}
+        x_0 \\\\
+        x_1 \\\\
+        x_2 \\\\
+        x_3 \\\\
+        x_4 \\\\
+        x_5 \\\\
+        x_6 \\\\
+        x_7 \\\\
+	\end{bmatrix}
 \\]
 
 We can see right away that there sure is some pattern to the signs of the matrix.
@@ -61,7 +71,7 @@ First off, let me exactly define the input `A` and the expected output `C`.
 We want to apply the transform to all column vectors of `A`, where `A` is stored in a column-major order, which means the columns are contiguous in memory.
 This means with `A[0]`, we can access the first column, which consists of 8 doubles.
 `C` is a matrix of the same dimension as `A`, but all columns are the result of a transformation with a column of `A`.
-In essence, we are thereby calculating \\(C = H_8 \times A\\).
+In essence, we are thereby calculating \\(C = H_8 \cdot A\\).
 
 The following defines help us access the matrix sizes in code.
 
@@ -227,7 +237,7 @@ Is there anything left to optimize that's "easily" approachable?
 So far I've only told half the story, because in fact I read the assignment the wrong way.
 We were supposed to calculate the transform in three steps.
 
-The matrix can actually be decomposed so that \\(H_8 = T_3 \times T_2 \times T_1\\).
+The matrix can actually be decomposed so that \\(H_8 = T_3 \cdot T_2 \cdot T_1\\).
 In full verbosity, here are the complete matrices for that.
 
 \\[
@@ -392,7 +402,7 @@ Let's start with the first transformation.
 \\(T_1\\) is relatively simple.
 If you're not that familiar with matrix multiplication, here is what the transformation does for \\(x \in \mathbb{R}^8\\).
 \\[
-	T_1 \times x =
+	T_1 \cdot x =
 	\begin{bmatrix}
 		x_0 + x_4 \\\\
 		x_1 + x_5 \\\\
@@ -428,7 +438,7 @@ static const inline __m256d transform1b(__m256d a, __m256d b)
 Next up is the second transformation.
 Again, let me show you what we need to calculate.
 \\[
-	T_2 \times x =
+	T_2 \cdot x =
 	\begin{bmatrix}
 		x_0 + x_2 \\\\
 		x_1 + x_3 \\\\
@@ -464,7 +474,7 @@ Lastly, with the third transformation it is kind of the same deal.
 This is just the other half of the `wht4x4()` function.
 For completeness, here is the calculation in vector form.
 \\[
-	T_3 \times x =
+	T_3 \cdot x =
 	\begin{bmatrix}
 		x_0 + x_1 \\\\
 		x_0 - x_1 \\\\
