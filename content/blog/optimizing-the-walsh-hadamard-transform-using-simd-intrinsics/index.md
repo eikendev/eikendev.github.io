@@ -392,7 +392,7 @@ The pattern is similar to our last implementation, except that this time
 - the transformation is split into three steps.
 
 Note that in the code above, we need to take into account that the amount of rows in our input vector is not divisible by four.
-I omitted the code for handling this in the snippet, but you I'll reference the full code in the end of the post.
+I omitted the code for handling this in the snippet, but I'll reference the full code in the end of the post.
 
 ## Three missing pieces
 
