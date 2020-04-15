@@ -23,10 +23,11 @@ deploy:
     branch: source
 after_deploy:
   - >
-    curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE/purge_cache" \
-    -H "Authorization: Bearer $CLOUDFLARE_TOKEN" \
-    -H "Content-Type: application/json" \
+    curl
+    -H "Authorization: Bearer $CLOUDFLARE_TOKEN"
+    -H "Content-Type: application/json"
     --data '{"purge_everything":true}'
+    -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE/purge_cache"
 env:
   global:
     - secure: qyi4dwVjk6QiZwlHw6Is5/cJkatI9rgf20dCqbuNdLhjgsoeQLW+lsgbU0gDjq4MdMC3zFWaJn1VoNFp5LfMit+mIbACHlLK7NJM2zRafRELacxYahqTuuOEwDgfoR4jQsJP5gf/gRGl0AodVsS12RuyIOra01Yc1LK9FswspcHCFE5mXwWmADkBT45HlEnPdHSanBDXHnX1HRmB09oAeUeeauNQw5ongE84KZaBXmRafVEvupd5LYqNJwgpOqHlKoC8ewfvtnYubq8dxFOLR05ftlV0pG+axLD1qKQ3bD5MR128gMwbFVH4w/kTbM1Lz4eccyAoi5XiJ5yZRYLx9B5GEwZp55Mw4Xt5tAI7UjqiiiJZX9hRG+5oA00TTsJ4kwJUgkRIcY9ZDAoej2dGhAWgdxX8sQ1qNMN2UJ09PixVzx173QxNpMKW/l6w+q1RIC6fpWjq94PL6YxHuPrUJ4x/anTKQWOJyQZIZLofL2DqDtCTkqcYjlZRORpbKTDKWnl0OeZd5hn/SCanDo/9SOQBOgjnI0vfHL98hRdD6Ear2JaWu8d/cy72uK3/46HpS4IexmFX7Z6z7zALp5uGBjiUD+HH1/jzgSR2B00rTtqPj7Y0XNkg76nvFYsdr0echw12gdUdMb0O2yK7iDYLRlXHPGDyp67ZxCzquveVt/4=
