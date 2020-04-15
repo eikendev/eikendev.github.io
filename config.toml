@@ -13,8 +13,8 @@ pygmentsUseClasses=true
 	tag = "tags"
 
 [params]
-	author = "eikendev"
-	description = "Public projects and source code by eikendev."
+	author = "Raphael Eikenberg (eikendev)"
+	description = "Personal projects and source code by eikendev."
 	keywords = "coding, git, projects, programming"
 	twitter = "eikendev"
 

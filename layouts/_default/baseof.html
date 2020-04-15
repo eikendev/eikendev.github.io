@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 
-<html lang="{{ with .Site.LanguageCode }}{{ . }}{{ else }}en-us{{ end }}" dir="ltr" class="h-100">
+{{ $itemtype := "WebPage" }}
+{{ if .IsPage }}{{ $itemtype = "BlogPosting" }}{{ end }}
+
+<html lang="{{ with .Site.LanguageCode }}{{ . }}{{ else }}en-us{{ end }}" dir="ltr" class="h-100" itemscope itemtype="http://schema.org/{{ $itemtype }}">
 	<head>
 		{{- partial "head.html" . -}}
 	</head>
