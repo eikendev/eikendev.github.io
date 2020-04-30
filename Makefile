@@ -3,6 +3,7 @@ all: build
 
 .PHONY: build
 build:
+	hugo version
 	hugo --minify
 	mkdir -p public/font/mathjax
 	cp node_modules/mathjax/es5/output/chtml/fonts/woff-v2/* public/font/mathjax/

@@ -14,7 +14,7 @@
 		"jquery": "^3.5.0",
 		"mathjax": "^3.0.1",
 		"popper.js": "^1.16.1",
-		"postcss-cli": "^7.1.0"
+		"postcss-cli": "7.1.0"
 	},
 	"browserslist": [
 		"> 1%"
