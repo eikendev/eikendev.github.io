@@ -1,0 +1,22 @@
+diff --git a/Procyon.Reflection/src/main/java/com/strobel/reflection/emit/TypeBuilder.java b/Procyon.Reflection/src/main/java/com/strobel/reflection/emit/TypeBuilder.java
+index 35dd38f..762c7f0 100644
+--- a/Procyon.Reflection/src/main/java/com/strobel/reflection/emit/TypeBuilder.java
++++ b/Procyon.Reflection/src/main/java/com/strobel/reflection/emit/TypeBuilder.java
+@@ -1231,12 +1231,15 @@ public final class TypeBuilder<T> extends Type<T> {
+ 
+             _hasBeenCreated = true;
+ 
+-            _generatedClass = (Class<T>) getUnsafeInstance().defineClass(
++            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
++            java.lang.reflect.Method defineClass = classloader.getClass().getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
++            defineClass.setAccessible(true);
++
++            _generatedClass = (Class<T>) defineClass.invoke(classloader,
+                 fullName,
+                 classBytes,
+                 0,
+                 classBytes.length,
+-                Thread.currentThread().getContextClassLoader(),
+                 _protectionDomain
+             );
+ 

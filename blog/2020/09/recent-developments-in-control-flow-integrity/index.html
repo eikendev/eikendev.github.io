@@ -1,0 +1,185 @@
+<!doctype html><html lang=en-us dir=ltr class=h-100 itemscope itemtype=http://schema.org/BlogPosting><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Raphael Eikenberg (eikendev)"><meta name=description content="I was a bit busy in the past few months, but now I&rsquo;m back to talk about some system security. During my Bachelor&rsquo;s studies, I did a bit of reading on Control-Flow Integrity (CFI). Recently, I&rsquo;ve stumbled upon a paper on CFI, and while giving it a read I found myself in the need of refreshing the basics. I thought I could use this opportunity to tell you about CFI and what current research is trying to achieve."><meta name=keywords content="security,cfi"><meta property="og:title" content="Recent Developments in Control-Flow Integrity"><meta property="og:description" content="I was a bit busy in the past few months, but now I&rsquo;m back to talk about some system security. During my Bachelor&rsquo;s studies, I did a bit of reading on Control-Flow Integrity (CFI). Recently, I&rsquo;ve stumbled upon a paper on CFI, and while giving it a read I found myself in the need of refreshing the basics. I thought I could use this opportunity to tell you about CFI and what current research is trying to achieve."><meta property="og:type" content="article"><meta property="og:url" content="https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/"><meta property="og:image" content="https://www.eiken.dev/img/blog/recent-developments-in-control-flow-integrity/card.png"><meta property="article:section" content="blog"><meta property="article:published_time" content="2020-09-12T21:52:00+00:00"><meta property="article:modified_time" content="2021-02-13T00:23:34+01:00"><meta property="og:site_name" content="eikendev"><meta itemprop=name content="Recent Developments in Control-Flow Integrity"><meta itemprop=description content="I was a bit busy in the past few months, but now I&rsquo;m back to talk about some system security. During my Bachelor&rsquo;s studies, I did a bit of reading on Control-Flow Integrity (CFI). Recently, I&rsquo;ve stumbled upon a paper on CFI, and while giving it a read I found myself in the need of refreshing the basics. I thought I could use this opportunity to tell you about CFI and what current research is trying to achieve."><meta itemprop=datePublished content="2020-09-12T21:52:00+00:00"><meta itemprop=dateModified content="2021-02-13T00:23:34+01:00"><meta itemprop=wordCount content="2284"><meta itemprop=image content="https://www.eiken.dev/img/blog/recent-developments-in-control-flow-integrity/card.png"><meta itemprop=keywords content="security,cfi,"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://www.eiken.dev/img/blog/recent-developments-in-control-flow-integrity/card.png"><meta name=twitter:title content="Recent Developments in Control-Flow Integrity"><meta name=twitter:description content="I was a bit busy in the past few months, but now I&rsquo;m back to talk about some system security. During my Bachelor&rsquo;s studies, I did a bit of reading on Control-Flow Integrity (CFI). Recently, I&rsquo;ve stumbled upon a paper on CFI, and while giving it a read I found myself in the need of refreshing the basics. I thought I could use this opportunity to tell you about CFI and what current research is trying to achieve."><meta name=twitter:site content="@eikendev"><title>Recent Developments in Control-Flow Integrity | eikendev</title><link rel=canonical href=https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/><link rel=apple-touch-icon sizes=180x180 href=https://www.eiken.dev/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.eiken.dev/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.eiken.dev/favicon-16x16.png><link rel=manifest href=https://www.eiken.dev/site.webmanifest><link rel=mask-icon href=https://www.eiken.dev/safari-pinned-tab.svg color=#111111><meta name=msapplication-TileColor content="#111111"><meta name=theme-color content="#111111"><link rel=stylesheet href=https://www.eiken.dev/css/style.4f4e8430154f02ae950adaf8501123abb3eb5b68bb8bcf93a1004b3f2424704a53ea5786eb0ba2fd54c96e89ee83c651.css integrity=sha384-T06EMBVPAq6VCtr4UBEjq7PrW2i7i8+ToQBLPyQkcEpT6leG6wui/VTJbonug8ZR></head><body class="d-flex flex-column h-100"><nav><div class="collapse bg-darkgray5 text-body" id=navbarHeader><div class="container py-3"><div class=row><div class="col-sm-8 col-md-7 py-md-2"><h4>About</h4><p>Coding projects and blog posts by eikendev. Always happy to learn something new. Also interested in infosec? Join my journey!</p></div><div class="col-sm-4 offset-md-1 py-md-2"><h4>Contact</h4><ul class=list-unstyled><li><a href=https://eikenberg.at/ class=text-white><i class="me-2 fas fa-globe-europe"></i>eikenberg.at</a></li><li><a href=https://twitter.com/eikendev class=text-white><i class="me-2 fab fa-twitter"></i>eikendev</a></li><li><a href=# class="text-white cryptedmail" data-name=hello data-domain=eiken data-tld=dev onclick="return window.location.href='mailto:'+this.dataset.name+'@'+this.dataset.domain+'.'+this.dataset.tld,!1"><i class="me-2 fas fa-envelope"></i></a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-darkgray5 shadow-sm"><div class="container d-flex justify-content-between"><a href=https://www.eiken.dev/ class="navbar-brand d-flex align-items-center"><img src=https://www.eiken.dev/img/logo.svg alt id=logo class=me-2>
+<strong>eikendev</strong></a>
+<button class="navbar-toggler collapsed" type=button data-bs-toggle=collapse data-bs-target=#navbarHeader aria-controls=navbarHeader aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button></div></div></nav><main class=flex-shrink-0><section class=py-5><div class="py-md-3 py-lg-5 container"><article class=single><div class="text-center mb-5"><div class=mb-4><a href=https://www.eiken.dev/tags/security class="badge bg-secondary badge-pill mx-1">security</a><a href=https://www.eiken.dev/tags/cfi class="badge bg-secondary badge-pill mx-1">cfi</a></div><h1 class=mb-4>Recent Developments in Control-Flow Integrity</h1><div class="row justify-content-center"><span class="my-1 mx-3 col-auto text-muted"><i class="fas fa-calendar-day me-2"></i><time datetime=2020-09-12T21:52:00Z>September 12, 2020</time></span>
+<span class="my-1 mx-3 col-auto text-muted"><i class="fas fa-clock me-2"></i>11 minutes</span></div></div><p>I was a bit busy in the past few months, but now I&rsquo;m back to talk about some system security.
+During my Bachelor&rsquo;s studies, I did a bit of reading on Control-Flow Integrity (CFI).
+Recently, I&rsquo;ve stumbled upon a paper on CFI, and while giving it a read I found myself in the need of refreshing the basics.
+I thought I could use this opportunity to tell you about CFI and what current research is trying to achieve.</p><h2 id=introduction>Introduction<a href=#introduction class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>C is a simple and powerful language.
+It&rsquo;s still being widely used, especially for applications where hardware must be directly controlled or memory management highly optimized.
+Among others, kernels, device drivers, databases, web servers, and media-related software projects are typically (at least partially) written in C.</p><p>In contrast to modern languages like <a href=https://www.rust-lang.org/>Rust</a> and <a href=https://golang.org/>Go</a>, C does not provide memory safety.
+As a result, data on the stack or heap can be corrupted during the execution of the program if no serious care is taken.
+To this day, this leads to horrendous security issues.</p><p>For this reason, additional security measures were introduced.
+As an example, you may already know about address space layout randomization (ASLR), a method used to randomize the virtual base addresses of different parts of the memory space of a program.
+To get an overview of other mitigation methods, I can recommend <a href=https://www.crowdstrike.com/blog/state-of-exploit-development-part-1/>this post</a> on CrowdStrike&rsquo;s blog.<sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup></p><p>Although techniques have been invented to make software written in such languages less error-prone, attackers are creative enough to find new ways to circumvent these measures.
+For instance, an ASLR-enabled binary can be attacked by leaking an address during execution, and SMEP is easily bypassed with return-oriented programming (ROP).
+This is why new defense strategies gained a lot of interest in recent years, of which I want to specifically name</p><ul><li>control flow hijacking protection like fine-grained CFI which is used to keep the control flow within expected bounds,</li><li>temporal memory safety, to prevent use after free (UaF) exploits,</li><li>spatial memory safety including memory error detection using <a href=https://github.com/google/sanitizers/wiki/AddressSanitizer>AddressSanitizer</a>, and</li><li>moving target defense (MTD), which can be used to transform the attack surface over time.</li></ul><p>In this post, we will limit the scope to CFI.</p><h2 id=fundamentals-of-cfi>Fundamentals of CFI<a href=#fundamentals-of-cfi class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>For a more extensive explanation of what CFI is, I&rsquo;d like to refer you to <a href=https://nebelwelt.net/blog/20160913-ControlFlowIntegrity.html>Mathias Payer&rsquo;s introduction to the topic</a>.
+There are also more formal definitions in recent literature, but I&rsquo;ll try a bit more concise in my own words.</p><p>So, CFI describes the goal of keeping the execution trace of a program within expected bounds.
+This prevents an attacker from manipulating the execution trace to their favor.</p><figure><img src=./controlflow-dark.svg alt="Hijack of a Control Flow"><figcaption><p>This figure depicts the typical flow-control during a hijack. Instead of jumping from the source address to the legit target, an attacker manipulates the the control-flow in a way that makes the program execute the target of their choice. A big thanks goes to <a href=https://leopoldse.dev/>Christian</a> for creating this image.</p></figcaption></figure><p>Let me first introduce two components to describe how CFI works, namely</p><ul><li>a <strong>monitor</strong> that is used to keep track of the execution of the program, and</li><li>an <strong>oracle</strong> that can tell which control flow transfers are allowed at a certain step during its execution.</li></ul><p>More formally, the oracle maintains a <em>points-to set</em> for each source address.
+The points-to set of a source address contains all target addresses to which control flow can be transferred from that source addresses.
+In literature, the process of determining the points-to set is called <em>points-to analysis</em>.</p><p>You may wonder how this helps, but we&rsquo;re almost there.
+Using the monitor we can see which address the program currently executes.
+When the program executes the next instruction, we need to query the oracle and ask whether the new address is in the points-to set of the previous address.
+If it isn&rsquo;t, then something must be wrong, and we can terminate the program.</p><p>To illustrate, let me give you a modified version of the code snippet that was used to introduce <a href=https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/ding>PittyPat</a> at USENIX Security 2017.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-c data-lang=c><span class=kt>void</span> <span class=nf>dispatch</span><span class=p>()</span> <span class=p>{</span>
+	<span class=k>while</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+		<span class=kt>void</span> <span class=p>(</span><span class=o>*</span><span class=n>handler</span><span class=p>)(</span><span class=k>struct</span> <span class=n>request</span> <span class=o>*</span><span class=p>)</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+		<span class=k>struct</span> <span class=n>request</span> <span class=n>req</span><span class=p>;</span>
+
+		<span class=n>parse_request</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>);</span>
+
+		<span class=k>if</span> <span class=p>(</span><span class=n>req</span><span class=p>.</span><span class=n>auth_user</span> <span class=o>==</span> <span class=n>ADMIN</span><span class=p>)</span> <span class=p>{</span>
+			<span class=n>handler</span> <span class=o>=</span> <span class=n>priv</span><span class=p>;</span>
+		<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+			<span class=n>handler</span> <span class=o>=</span> <span class=n>unpriv</span><span class=p>;</span>
+		<span class=p>}</span>
+
+		<span class=n>strip_args</span><span class=p>(</span><span class=n>req</span><span class=p>.</span><span class=n>args</span><span class=p>);</span> <span class=c1>// stack buffer overflow
+</span><span class=c1></span>		<span class=n>handler</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>);</span>
+	<span class=p>}</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>Here, a server processes user requests.
+Depending on the privileges of the requesting user, a different handler function is executed.</p><p>As the comment indicates, a buffer overflow enables an attacker to modify data on the stack.
+The attacker could, for instance, overwrite <code>handler</code> that is later called.
+But we know that only two different functions can be called after <code>strip_args()</code>, namely <code>priv()</code> and <code>unpriv()</code>.
+If the program was to call <code>execv()</code> instead, something cannot be right.
+Determining if something is right or not primarily depends on the oracle we introduced.
+The oracle we introduced will tell us that <code>execv()</code> is not in the points-to set of the source address.</p><p>Unfortunately, it is not trivial to determine the points-to set of a source address.
+A points-to set does not even need to be constant throughout the execution of a program.
+Hence, research has evolved in how the oracle should behave, i.e., what <em>policy</em> it should enforce, and we will look at this in the next section.</p><p>Note that pages on modern systems are never marked as both executable and writable at the same time.
+Thus, CFI is mostly concerned with <em>indirect</em> control flow transfers, i.e., transfers where the target address is evaluated during run-time.</p><p>Before we end this section, I want to quickly mention the different scopes of CFI.
+In our example, the attacker could have leveraged the buffer overflow to modify the return address of the call to <code>strip_args()</code>.
+To detect this using CFI, we would also need to determine to where we can return from a given source address.
+Thus, literature usually differentiates between</p><ul><li><em>forward-edge</em> CFI, that restricts protection to jumps and calls, and</li><li><em>backward-edge</em> CFI, that deals with returns from function calls.</li></ul><h2 id=path-sensitivity-in-cfi>Path Sensitivity in CFI<a href=#path-sensitivity-in-cfi class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>Back in 2017, Ding et al. published their work on PittyPat, a CFI system.
+Similar to other publications before they pointed out that it&rsquo;s important to have not only a dynamic points-to set but specifically that the points-to set must depend on the whole execution trace when the program runs.<sup id=fnref:2><a href=#fn:2 class=footnote-ref role=doc-noteref>2</a></sup>
+Systems with that property are called <em>path-sensitive</em>.</p><p>To explain why this is necessary, they used the program we have seen earlier.
+Here&rsquo;s the snippet to remind ourselves of how it worked.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-c data-lang=c><span class=kt>void</span> <span class=nf>dispatch</span><span class=p>()</span> <span class=p>{</span>
+	<span class=k>while</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+		<span class=kt>void</span> <span class=p>(</span><span class=o>*</span><span class=n>handler</span><span class=p>)(</span><span class=k>struct</span> <span class=n>request</span> <span class=o>*</span><span class=p>)</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+		<span class=k>struct</span> <span class=n>request</span> <span class=n>req</span><span class=p>;</span>
+
+		<span class=n>parse_request</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>);</span>
+
+		<span class=k>if</span> <span class=p>(</span><span class=n>req</span><span class=p>.</span><span class=n>auth_user</span> <span class=o>==</span> <span class=n>ADMIN</span><span class=p>)</span> <span class=p>{</span>
+			<span class=n>handler</span> <span class=o>=</span> <span class=n>priv</span><span class=p>;</span>
+		<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+			<span class=n>handler</span> <span class=o>=</span> <span class=n>unpriv</span><span class=p>;</span>
+		<span class=p>}</span>
+
+		<span class=n>strip_args</span><span class=p>(</span><span class=n>req</span><span class=p>.</span><span class=n>args</span><span class=p>);</span> <span class=c1>// stack buffer overflow
+</span><span class=c1></span>		<span class=n>handler</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>);</span>
+	<span class=p>}</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>For instance, if the first loop iteration processes a privileged user, the <code>priv()</code> function is added to the points-to set.
+If the next iteration then processed an unprivileged user, the <code>unpriv()</code> function is added to the points-to set, but the <code>priv()</code> function needs to be removed.
+The removal of elements was not part of earlier work, but it is crucial for the integrity of the control flow: if both target addresses were part of the points-to set, an attacker could make use of this by manipulating the stack so <code>priv()</code> is called when an unprivileged user makes the request.</p><p>On a higher level, PittyPat monitors the execution of a program and derives its execution path.
+This context is then used to determine the points-to sets for source addresses.
+To make use of the context, PittyPat is given some representation of the code (an LLVM IR) upon the start of the monitored program.</p><p>Since the points-to analysis is performed continuously during the execution of the program, we call it an <em>online</em> analysis.
+With an online analysis, the oracle is updated during the execution.</p><h2 id=points-to-sets-as-singletons>Points-to Sets as Singletons<a href=#points-to-sets-as-singletons class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>So far so good.
+But then, two years later in <a href=https://dl.acm.org/doi/10.1145/3243734.3243797>their work on μCFI</a>, Hu et al. discovered that this scheme could be improved.
+To explain why this was necessary, they provided a code snippet similar to the following.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-c data-lang=c><span class=k>typedef</span> <span class=nf>void</span> <span class=p>(</span><span class=o>*</span><span class=n>FP</span><span class=p>)(</span><span class=kt>char</span> <span class=o>*</span><span class=p>);</span>
+<span class=kt>void</span> <span class=nf>A</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>);</span> <span class=kt>void</span> <span class=nf>B</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>);</span> <span class=kt>void</span> <span class=nf>C</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>);</span>
+
+<span class=kt>void</span> <span class=nf>handleReq</span><span class=p>(</span><span class=kt>int</span> <span class=n>uid</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>input</span><span class=p>)</span> <span class=p>{</span>
+	<span class=n>FP</span> <span class=n>arr</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>=</span> <span class=p>{</span><span class=o>&amp;</span><span class=n>A</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>B</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>C</span><span class=p>};</span>
+	<span class=n>FP</span> <span class=n>fun</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+
+	<span class=k>if</span> <span class=p>(</span><span class=n>uid</span> <span class=o>&lt;</span> <span class=mi>0</span> <span class=o>||</span> <span class=n>uid</span> <span class=o>&gt;</span> <span class=mi>2</span><span class=p>)</span>
+		<span class=k>return</span><span class=p>;</span>
+
+	<span class=c1>// uid is in {0, 1, 2}
+</span><span class=c1></span>
+	<span class=k>if</span> <span class=p>(</span><span class=n>uid</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=c1>// uid is 0
+</span><span class=c1></span>		<span class=n>fun</span> <span class=o>=</span> <span class=n>arr</span><span class=p>[</span><span class=mi>0</span><span class=p>];</span>
+	<span class=k>else</span> <span class=c1>// uid is in {1, 2}
+</span><span class=c1></span>		<span class=n>fun</span> <span class=o>=</span> <span class=n>arr</span><span class=p>[</span><span class=n>uid</span><span class=p>];</span>
+
+	<span class=kt>char</span> <span class=n>buf</span><span class=p>[</span><span class=mi>20</span><span class=p>];</span>
+	<span class=n>strcpy</span><span class=p>(</span><span class=n>buf</span><span class=p>,</span> <span class=n>input</span><span class=p>);</span> <span class=c1>// stack buffer overflow
+</span><span class=c1></span>
+	<span class=p>(</span><span class=o>*</span><span class=n>fun</span><span class=p>)(</span><span class=n>buf</span><span class=p>);</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>The difference to the previous example is that the same variable that is used for the condition is now also used for assigning the function pointer.
+Thus, considering the case of <code>uid == 1</code>, the bare knowledge of the branch yields a points-to set with <code>B()</code> and <code>C()</code>.</p><p>But we can be more restrictive!
+The branch itself does not allow us to deduce more information, but our conditional variable <code>uid</code> does.
+This lead the researchers to the idea that the points-to analysis could always deduce a single target address from a given context, i.e., all points-to sets should have a single element.
+That property was then named unique code target (UCT) property.</p><p>I think the property is pretty intuitive.
+Since the program needs to determine a single value for <code>fun</code>, the context must always allow for exactly a single target address.
+Hence, if the oracle was perfect, the points-to set has always just a single target address at a specific step in the execution trace.
+That is if the oracle is given the full execution context at that step.</p><h2 id=requirements-of-online-analyses>Requirements of Online Analyses<a href=#requirements-of-online-analyses class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>As always, the additional layer of security comes at its own cost.</p><p>The concepts from above require an online points-to analysis.
+Naturally, this leads to high run-time overhead, because we continuously determine a new points-to set.
+According to their papers, PittyPat and μCFI introduce a performance overhead of roughly 13% and 2% respectively, which for me comes as a surprise.
+Still, according to other research, these systems are impractical for larger programs.</p><p>With an online points-to analysis, we now also need a mechanism that feeds us the information we use for performing the online points-to analysis.
+The two systems we highlighted so far leverage Intel PT for this.
+But generally, this mechanism might not be available on certain platforms.</p><p>Additionally, <a href=https://en.wikipedia.org/wiki/Branch_trace>control flow tracers</a> might not capture every flow control transfer.
+This could be either because there are so many transfers that the tracer cannot keep up, or because the tracer is just invoked at certain points of the execution, e.g., at system calls.</p><h2 id=origin-sensitivity-in-cfi>Origin Sensitivity in CFI<a href=#origin-sensitivity-in-cfi class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>So &ldquo;perfect&rdquo; path sensitivity is not lightweight and comes with an uncomfortable requirement.
+Additionally, implementing path sensitivity for the general case turns out to be tricky.</p><p>But can we find a similar CFI property that does not require online points-to analysis, while keeping a comparable level of security?
+Exactly this was the goal of <a href=https://www.usenix.org/conference/usenixsecurity19/presentation/khandaker>more recent research on CFI</a> presented at USENIX Security 2019.</p><p>Khandaker et al. introduce a system with static analysis (meaning the analysis happens before running the program) with an <em>origin-sensitive</em> policy.
+To give you an idea of what this new property achieves, I want to explain <em>equivalence classes</em> (ECs) in the context of CFI first.</p><p>How real-world implementations like <a href=https://grsecurity.net/rap_announce2>RAP</a> and <a href=https://clang.llvm.org/docs/ControlFlowIntegrity.html>LLVM CFI</a> currently work is that they group targets into ECs.<sup id=fnref:3><a href=#fn:3 class=footnote-ref role=doc-noteref>3</a></sup>
+The abstraction improves the performance but weakens the security guarantees: if two addresses were in the same EC and we need to have one address in our points-to set, the other address would inherently also be needed to be in the points-to set, because we can no longer distinguish between them.</p><p>According to the paper, the goal for a static CFI system is now to minimize the average size of all ECs, as well as the size of the largest EC.
+This is done by changing the criteria by which targets are grouped.</p><p>In the case of origin sensitivity, elements in an EC share their origin.
+The authors define the origin as a tuple <code>(CS, I)</code>.<sup id=fnref:4><a href=#fn:4 class=footnote-ref role=doc-noteref>4</a></sup>, where <code>I</code> is the instruction where the function pointer is written (remember that we deal with indirect flow control transfers) and <code>CS</code> is the instruction that calls the function where <code>I</code> is located.
+They report great effectiveness throughout <a href=https://www.spec.org/cpu2006/>SPEC CPU2006</a>, which is a standard benchmark suite.</p><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>Of course, there are also different approaches to detecting flow control hijacking, like <a href=https://www.usenix.org/conference/osdi14/technical-sessions/presentation/kuznetsov>CPI and CPS</a>.
+Mathias published <a href=https://nebelwelt.net/blog/2014/1007-CFICPSCPIdiffs.html>a great comparison of CFI, CPI, and CPS</a> back in 2014, but I think it is a bit outdated given the recent advancements in CFI.</p><p>Anyway, this was already everything I wanted to cover in this post.
+I am convinced that the future will bring new and further enhanced CFI systems.
+Maybe we someday end up with a path-sensitive system that is lightweight enough for complex programs.
+In either case, going from here the best we can hope for is that memory safety will continue to be treated with high importance in language design and that more projects open up for the use of memory-safe languages in their codebase.</p><section class=footnotes role=doc-endnotes><hr><ol><li id=fn:1 role=doc-endnote><p>The post is focused on mitigations for Windows, but the principles are similar on other operating systems.&#160;<a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:2 role=doc-endnote><p><a href=https://dl.acm.org/doi/10.1145/2810103.2813644>πCFI</a> and <a href=https://dl.acm.org/doi/10.1145/2810103.2813673>PathArmor</a> introduced similar systems.&#160;<a href=#fnref:2 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:3 role=doc-endnote><p>Read <a href=https://nebelwelt.net/blog/20181226-CFIeval.html>this article</a> for more information on this.&#160;<a href=#fnref:3 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:4 role=doc-endnote><p>Actually, the paper gives two definitions. I simplified this here because I wanted to prevent the complexity of suddenly switching over to C++.&#160;<a href=#fnref:4 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li></ol></section></article><div class=mt-5><div class="row row-cols-2 justify-content-center"><div class="col-12 col-lg-8"><div class="card shadow-sm"><div class=card-body><h5 class="text-center mb-3">If you liked this article, share it with your friends!</h5><div class="row justify-content-center mb-3"><a class="btn btn-primary m-1 col-auto mr-clear-lastchild" href="https://twitter.com/intent/tweet?url=https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/&text=Recent%20Developments%20in%20Control-Flow%20Integrity" target=_blank title=Twitter><i class="fab fa-twitter me-2"></i>Twitter</a>
+<a class="btn btn-secondary m-1 col-auto mr-clear-lastchild" href="https://www.reddit.com/submit?url=https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/&title=Recent%20Developments%20in%20Control-Flow%20Integrity" target=_blank title=Reddit><i class="fab fa-reddit-alien me-2"></i>Reddit</a>
+<a class="btn btn-secondary m-1 col-auto mr-clear-lastchild" href="https://news.ycombinator.com/submitlink?u=https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/&t=Recent%20Developments%20in%20Control-Flow%20Integrity" target=_blank title="Hacker News"><i class="fab fa-hacker-news me-2"></i>Hacker News</a></div><div class=text-center>Never miss new content by following me on <a href=https://twitter.com/eikendev>Twitter</a> and subscribing to my <a href=/index.xml>feed</a>.</div></div></div></div></div><div class="mx-auto mt-5 text-center"><a class="text-reset text-decoration-none" href=https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/><div>Previous: <i>Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics</i></div></a><a class="text-reset text-decoration-none" href=https://www.eiken.dev/blog/2020/11/code-spotlight-the-reference-implementation-of-ed25519-part-1/><div>Next: <i>Code Spotlight: the Reference Implementation of Ed25519 (Part 1)</i></div></a></div></div></div></section></main><footer class="footer mt-auto py-3 bg-darkgray5"><div class=container><div class="row justify-content-center mb-3"><a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=https://eikenberg.at/ title=eikenberg.at><i class="fas fa-globe-europe me-2"></i>eikenberg.at</a>
+<a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=/index.xml title=Feed><i class="fas fa-rss me-2"></i>Feed</a>
+<a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=https://creativecommons.org/licenses/by/4.0/ title="Attribution 4.0 International (CC BY 4.0)"><i class="fab fa-creative-commons me-2"></i>License</a></div><p class="text-center text-muted mb-clear-lastchild"><small>Copyright © eikendev</small></p></div></footer><script src=https://www.eiken.dev/js/bundle.min.0487f405ed8aa6a2cfa14777084a79f60414a1780ae2901d6ba3cc570f1b61f883b040b05fe6ad64ad2ae83fd31422f4.js integrity=sha384-BIf0Be2KpqLPoUd3CEp59gQUoXgK4pAda6PMVw8bYfiDsECwX+atZK0q6D/TFCL0 crossorigin=anonymous></script><script defer src=https://www.eiken.dev/js/bundle-deferred.min.dd05ace8270e13a509dd103ff21f93b9b79af9eae7e27127b90ed2a1bebf1ecf58915717871597371683b0996860cc07.js integrity=sha384-3QWs6CcOE6UJ3RA/8h+Tubea+ern4nEnuQ7Sob6/Hs9YkVcXhxWXNxaDsJloYMwH crossorigin=anonymous></script></body></html>

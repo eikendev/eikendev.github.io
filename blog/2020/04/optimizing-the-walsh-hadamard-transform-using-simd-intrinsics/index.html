@@ -1,0 +1,506 @@
+<!doctype html><html lang=en-us dir=ltr class=h-100 itemscope itemtype=http://schema.org/BlogPosting><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Raphael Eikenberg (eikendev)"><meta name=description content="I&rsquo;m currently studying fast numeric code at university, where I&rsquo;ve been confronted with the problem of optimizing the Walsh-Hadamard transform using SIMD intrinsics. To be honest, I don&rsquo;t know a lot about the maths behind it, but apparently it has a lot of applications, specifically in cryptography, signal processing and quantum computing.
+Since it was so much fun to apply my fresh knowledge about intrinsics on a real-world problem, I thought it may be worth sharing this experience here on my blog."><meta name=keywords content="performance,simd,intrinsics"><meta property="og:title" content="Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics"><meta property="og:description" content="I&rsquo;m currently studying fast numeric code at university, where I&rsquo;ve been confronted with the problem of optimizing the Walsh-Hadamard transform using SIMD intrinsics. To be honest, I don&rsquo;t know a lot about the maths behind it, but apparently it has a lot of applications, specifically in cryptography, signal processing and quantum computing.
+Since it was so much fun to apply my fresh knowledge about intrinsics on a real-world problem, I thought it may be worth sharing this experience here on my blog."><meta property="og:type" content="article"><meta property="og:url" content="https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/"><meta property="og:image" content="https://www.eiken.dev/img/logo.png"><meta property="article:section" content="blog"><meta property="article:published_time" content="2020-04-13T00:58:27+02:00"><meta property="article:modified_time" content="2020-04-13T12:50:18+02:00"><meta property="og:site_name" content="eikendev"><meta itemprop=name content="Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics"><meta itemprop=description content="I&rsquo;m currently studying fast numeric code at university, where I&rsquo;ve been confronted with the problem of optimizing the Walsh-Hadamard transform using SIMD intrinsics. To be honest, I don&rsquo;t know a lot about the maths behind it, but apparently it has a lot of applications, specifically in cryptography, signal processing and quantum computing.
+Since it was so much fun to apply my fresh knowledge about intrinsics on a real-world problem, I thought it may be worth sharing this experience here on my blog."><meta itemprop=datePublished content="2020-04-13T00:58:27+02:00"><meta itemprop=dateModified content="2020-04-13T12:50:18+02:00"><meta itemprop=wordCount content="3711"><meta itemprop=image content="https://www.eiken.dev/img/logo.png"><meta itemprop=keywords content="performance,simd,intrinsics,"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://www.eiken.dev/img/logo.png"><meta name=twitter:title content="Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics"><meta name=twitter:description content="I&rsquo;m currently studying fast numeric code at university, where I&rsquo;ve been confronted with the problem of optimizing the Walsh-Hadamard transform using SIMD intrinsics. To be honest, I don&rsquo;t know a lot about the maths behind it, but apparently it has a lot of applications, specifically in cryptography, signal processing and quantum computing.
+Since it was so much fun to apply my fresh knowledge about intrinsics on a real-world problem, I thought it may be worth sharing this experience here on my blog."><meta name=twitter:site content="@eikendev"><title>Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics | eikendev</title><link rel=canonical href=https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/><link rel=apple-touch-icon sizes=180x180 href=https://www.eiken.dev/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.eiken.dev/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.eiken.dev/favicon-16x16.png><link rel=manifest href=https://www.eiken.dev/site.webmanifest><link rel=mask-icon href=https://www.eiken.dev/safari-pinned-tab.svg color=#111111><meta name=msapplication-TileColor content="#111111"><meta name=theme-color content="#111111"><link rel=stylesheet href=https://www.eiken.dev/css/style.4f4e8430154f02ae950adaf8501123abb3eb5b68bb8bcf93a1004b3f2424704a53ea5786eb0ba2fd54c96e89ee83c651.css integrity=sha384-T06EMBVPAq6VCtr4UBEjq7PrW2i7i8+ToQBLPyQkcEpT6leG6wui/VTJbonug8ZR></head><body class="d-flex flex-column h-100"><nav><div class="collapse bg-darkgray5 text-body" id=navbarHeader><div class="container py-3"><div class=row><div class="col-sm-8 col-md-7 py-md-2"><h4>About</h4><p>Coding projects and blog posts by eikendev. Always happy to learn something new. Also interested in infosec? Join my journey!</p></div><div class="col-sm-4 offset-md-1 py-md-2"><h4>Contact</h4><ul class=list-unstyled><li><a href=https://eikenberg.at/ class=text-white><i class="me-2 fas fa-globe-europe"></i>eikenberg.at</a></li><li><a href=https://twitter.com/eikendev class=text-white><i class="me-2 fab fa-twitter"></i>eikendev</a></li><li><a href=# class="text-white cryptedmail" data-name=hello data-domain=eiken data-tld=dev onclick="return window.location.href='mailto:'+this.dataset.name+'@'+this.dataset.domain+'.'+this.dataset.tld,!1"><i class="me-2 fas fa-envelope"></i></a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-darkgray5 shadow-sm"><div class="container d-flex justify-content-between"><a href=https://www.eiken.dev/ class="navbar-brand d-flex align-items-center"><img src=https://www.eiken.dev/img/logo.svg alt id=logo class=me-2>
+<strong>eikendev</strong></a>
+<button class="navbar-toggler collapsed" type=button data-bs-toggle=collapse data-bs-target=#navbarHeader aria-controls=navbarHeader aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button></div></div></nav><main class=flex-shrink-0><section class=py-5><div class="py-md-3 py-lg-5 container"><article class=single><div class="text-center mb-5"><div class=mb-4><a href=https://www.eiken.dev/tags/performance class="badge bg-secondary badge-pill mx-1">performance</a><a href=https://www.eiken.dev/tags/simd class="badge bg-secondary badge-pill mx-1">simd</a><a href=https://www.eiken.dev/tags/intrinsics class="badge bg-secondary badge-pill mx-1">intrinsics</a></div><h1 class=mb-4>Optimizing the Walsh-Hadamard Transform Using SIMD Intrinsics</h1><div class="row justify-content-center"><span class="my-1 mx-3 col-auto text-muted"><i class="fas fa-calendar-day me-2"></i><time datetime=2020-04-13T00:58:27+02:00>April 13, 2020</time></span>
+<span class="my-1 mx-3 col-auto text-muted"><i class="fas fa-clock me-2"></i>18 minutes</span></div></div><p>I&rsquo;m currently studying fast numeric code at university, where I&rsquo;ve been confronted with the problem of optimizing the <a href=https://en.wikipedia.org/wiki/Hadamard_transform>Walsh-Hadamard transform</a> using SIMD intrinsics.
+To be honest, I don&rsquo;t know a lot about the maths behind it, but apparently it has a lot of applications, specifically in cryptography, signal processing and quantum computing.</p><p>Since it was so much fun to apply my fresh knowledge about intrinsics on a real-world problem, I thought it may be worth sharing this experience here on my blog.
+Be aware though that I&rsquo;m not an intrinsics-guru, which is why there is certainly more optimized code available.<sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup></p><p>If you have never heard of intrinsics, you should definitely read <a href=https://jackmott.github.io/programming/2016/07/22/making-obvious-fast.html>this article</a> that shows how much performance can be gained in various programming languages when the right instructions are used.</p><p>Also note that in the following, we will measure performance in flops per cycle.
+That is, given a program, we evaluate how many floating point operations are needed to run the program, and measure how many cycles the program took to complete.
+Luckily for me, this whole environment was provided by my university, but in theory it could be done locally, too.
+You&rsquo;ll just have to get a way of accurately measure the cycle count, which is a bit more tricky than it sounds.</p><p>For the expert readers, the measured program will be compiled using GCC 8.3.1 with the flags <code>-O3 -fno-tree-vectorize -mavx2 -mfma</code>.
+The processor is a <a href=https://ark.intel.com/content/www/us/en/ark/products/193384/intel-xeon-silver-4210-processor-13-75m-cache-2-20-ghz.html>Intel Xeon Silver 4210</a>.
+Even if Intel® AVX-512 instructions are supported on this chip, we&rsquo;ll be limiting ourselves to Intel® AVX2.</p><h2 id=understanding-the-problem>Understanding the problem<a href=#understanding-the-problem class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>Alright, so what is the task?
+We&rsquo;re given a vector \(x\) with eight doubles, and want to transform it using the Walsh-Hadamard matrix \(H_8\).
+\[
+H_8 \cdot x =
+\begin{bmatrix}
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\<br>1 & -1 & 1 & -1 & 1 & -1 & 1 & -1 \\<br>1 & 1 & -1 & -1 & 1 & 1 & -1 & -1 \\<br>1 & -1 & -1 & 1 & 1 & -1 & -1 & 1 \\<br>1 & 1 & 1 & 1 & -1 & -1 & -1 & -1 \\<br>1 & -1 & 1 & -1 & -1 & 1 & -1 & 1 \\<br>1 & 1 & -1 & -1 & -1 & -1 & 1 & 1 \\<br>1 & -1 & -1 & 1 & -1 & 1 & 1 & -1
+\end{bmatrix}
+\cdot
+\begin{bmatrix}
+x_0 \\<br>x_1 \\<br>x_2 \\<br>x_3 \\<br>x_4 \\<br>x_5 \\<br>x_6 \\<br>x_7
+\end{bmatrix}
+\]</p><p>We can see right away that there sure is some pattern to the signs of the matrix.
+This is no coincidence.
+The Walsh-Hadamard transform can be defined as
+\[
+H_m =
+\begin{bmatrix}
+H_{m-1} & H_{m-1} \\<br>H_{m-1} & -H_{m-1}
+\end{bmatrix}
+\]
+where \(H_0 = 1\) and \(m > 0\).
+This means the matrix will always be square, and all four quarters are identical, except that the lower right quarter is negated.
+Of course, we will exploit this property later in our code.</p><p>So, let&rsquo;s try to write a first implementation without any intrinsics at all.
+First off, let me exactly define the input <code>A</code> and the expected output <code>C</code>.
+We want to apply the transform to all column vectors of <code>A</code>, where <code>A</code> is stored in a column-major order, which means the columns are contiguous in memory.
+This means with <code>A[0]</code>, we can access the first column, which consists of 8 doubles.
+<code>C</code> is a matrix of the same dimension as <code>A</code>, but all columns are the result of a transformation with a column of <code>A</code>.
+In essence, we are thereby calculating \(C = H_8 \cdot A\).</p><p>The following defines help us access the matrix sizes in code.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=cp>#define NR (8) </span><span class=c1>// Number of rows.
+</span><span class=c1></span><span class=cp>#define MR (75) </span><span class=c1>// Number of columns.
+</span></code></pre></td></tr></table></div></div><p>Without intrinsics, we only need a simple loop that iterates over all columns and applies the transform like so.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=kt>void</span> <span class=nf>wht_composed_novectors</span><span class=p>(</span><span class=kt>double</span><span class=o>*</span> <span class=n>A</span><span class=p>,</span> <span class=kt>double</span><span class=o>*</span> <span class=n>C</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=kt>double</span> <span class=o>*</span><span class=n>a</span> <span class=o>=</span> <span class=n>A</span><span class=p>;</span>
+    <span class=kt>double</span> <span class=o>*</span><span class=n>c</span> <span class=o>=</span> <span class=n>C</span><span class=p>;</span>
+
+    <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>MR</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span> <span class=p>{</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+        <span class=n>c</span><span class=p>[</span><span class=mi>7</span><span class=p>]</span> <span class=o>=</span> <span class=n>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>3</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>4</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>5</span><span class=p>]</span> <span class=o>+</span> <span class=n>a</span><span class=p>[</span><span class=mi>6</span><span class=p>]</span> <span class=o>-</span> <span class=n>a</span><span class=p>[</span><span class=mi>7</span><span class=p>];</span>
+
+        <span class=n>a</span> <span class=o>+=</span> <span class=n>NR</span><span class=p>;</span>
+        <span class=n>c</span> <span class=o>+=</span> <span class=n>NR</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>For this code, the performance measuring black box outputs 0.6 flops per cycle.
+What does this mean?
+Roughly speaking, it means that every cycle on average that many floating point operations complete.</p><p>For comparison, the processor on which the measurement was made has a throughput of 2 flops per cycle for the vectorized addition, <code>vaddsd</code>.
+You can check this yourself in the <a href=https://www.agner.org/optimize/>instruction table maintained by Agner Fog</a>, which is an excellent resource for optimizing code at assembly level.</p><p>We know the CPU would be able to process two floating point additions per cycle, but our code makes only partially use of that capability.</p><p>Now why do I compare the result to a vectorized addition, even though we are passing the <code>-fno-tree-vectorize</code> flag to GCC?
+If you write a simple program that adds two doubles and compile it with the flag, you can see that in assembly the <code>vaddsd</code> instruction is indeed used.
+The suffix <code>sd</code> here means that it&rsquo;s <a href=https://stackoverflow.com/a/16218793>a scalar double precision operation</a>, so only one double addition is being performed.
+I guess GCC does not count using scalar SIMD instructions as vectorization, which makes sense.</p><h2 id=introducing-vector-intrinsics>Introducing vector intrinsics<a href=#introducing-vector-intrinsics class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>So what can we do to improve?
+If you look at the loop above, you see that in each row, we want to sum all components of the row.
+The only difference is that different signs are being used.</p><p>But we&rsquo;ve already heard that there&rsquo;s a pattern somewhere.
+So if you look closely to the quarters on the left of the transform matrix, they appear to be exactly the same.
+Comparing it with the loop in <code>wht_composed_novectors()</code>, we can clearly see that the operands are also the same.
+Hence, we could calculate the results of the sums in the upper left quarter, and use these for the calculations in the lower left quarter.</p><p>As for the right quarters, things are very similar.
+The only difference are the signs.
+So if we calculate the sums in the upper right quarter, we can negate the results and use it for the sums in the lower right quarter.</p><p>In total, we can now save calculating the upper four values of <code>c</code>, and replace it with a single subtraction!</p><p>Let&rsquo;s suppose for a moment that we found a simple way to calculate the lower four values.
+Then our source code could look like this.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=kt>void</span> <span class=nf>wht_composed_vectors</span><span class=p>(</span><span class=kt>double</span><span class=o>*</span> <span class=n>A</span><span class=p>,</span> <span class=kt>double</span><span class=o>*</span> <span class=n>C</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>aamm</span> <span class=o>=</span> <span class=n>_mm256_set_pd</span><span class=p>(</span><span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>);</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>amam</span> <span class=o>=</span> <span class=n>_mm256_set_pd</span><span class=p>(</span><span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>);</span>
+
+    <span class=kt>double</span> <span class=o>*</span><span class=n>a</span> <span class=o>=</span> <span class=n>A</span><span class=p>;</span>
+    <span class=kt>double</span> <span class=o>*</span><span class=n>c</span> <span class=o>=</span> <span class=n>C</span><span class=p>;</span>
+
+    <span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>MR</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span> <span class=p>{</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>al</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=mi>0</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ah</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=mi>4</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>cl</span> <span class=o>=</span> <span class=n>wht4x4</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>amam</span><span class=p>,</span> <span class=n>al</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ch</span> <span class=o>=</span> <span class=n>wht4x4</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>amam</span><span class=p>,</span> <span class=n>ah</span><span class=p>);</span>
+
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=mi>0</span><span class=p>,</span> <span class=n>_mm256_add_pd</span><span class=p>(</span><span class=n>cl</span><span class=p>,</span> <span class=n>ch</span><span class=p>));</span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=mi>4</span><span class=p>,</span> <span class=n>_mm256_sub_pd</span><span class=p>(</span><span class=n>cl</span><span class=p>,</span> <span class=n>ch</span><span class=p>));</span>
+
+        <span class=n>a</span> <span class=o>+=</span> <span class=n>NR</span><span class=p>;</span>
+        <span class=n>c</span> <span class=o>+=</span> <span class=n>NR</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p><code>aamm</code> and <code>amam</code> are constants that we&rsquo;ll use later on.
+What&rsquo;s important is the overall concept on the higher level.</p><p>First, we load the lower and the higher four doubles of our input columns.
+Next, we apply the <code>wht4x4()</code> function that returns us the addition of all four doubles in both loaded vectors.
+Finally, using these sums, we can easily calculate all entries of the output vector using a single addition and a subtraction.</p><p>Now, how does <code>wht4x4()</code> work?
+I already knew what I was looking for at this point, but it was quite tricky to choose the right instructions.
+When browsing the Internet I found <a href=https://stackoverflow.com/a/54133143>this answer on StackOverflow</a>, which did not calculate the correct results.
+However, after some on-paper debugging I fixed the errors and was left with the following piece of code.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=k>const</span> <span class=kr>inline</span> <span class=n>__m256d</span> <span class=nf>wht4x4</span><span class=p>(</span><span class=k>const</span> <span class=n>__m256d</span> <span class=n>aamm</span><span class=p>,</span> <span class=k>const</span> <span class=n>__m256d</span> <span class=n>amam</span><span class=p>,</span> <span class=n>__m256d</span> <span class=n>a</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=c1>// [a1, a0, a3, a2]
+</span><span class=c1></span>    <span class=n>__m256d</span> <span class=n>a1032</span> <span class=o>=</span> <span class=n>_mm256_permute_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=mb>0b0101</span><span class=p>);</span>
+
+    <span class=c1>// [a0 + a1, a0 - a1, a2 + a3, a2 - a3]
+</span><span class=c1></span>    <span class=n>__m256d</span> <span class=n>a01012323</span> <span class=o>=</span> <span class=n>_mm256_fmadd_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>amam</span><span class=p>,</span> <span class=n>a1032</span><span class=p>);</span>
+
+    <span class=c1>// [a2 + a3, a2 - a3, a0 + a1, a0 - a1]
+</span><span class=c1></span>    <span class=n>__m256d</span> <span class=n>a23230101</span> <span class=o>=</span> <span class=n>_mm256_permute2f128_pd</span><span class=p>(</span><span class=n>a01012323</span><span class=p>,</span> <span class=n>a01012323</span><span class=p>,</span> <span class=mb>0b00000001</span><span class=p>);</span>
+
+    <span class=c1>// [a0 + a1 + a2 + a3, a0 - a1 + a2 - a3, a0 + a1 - a2 - a3, a0 - a1 - a2 + a3]
+</span><span class=c1></span>    <span class=n>__m256d</span> <span class=n>ret</span> <span class=o>=</span> <span class=n>_mm256_fmadd_pd</span><span class=p>(</span><span class=n>a01012323</span><span class=p>,</span> <span class=n>aamm</span><span class=p>,</span> <span class=n>a23230101</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>ret</span><span class=p>;</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>Let&rsquo;s approach this in a more abstract way.
+We have a tuple \(a = (a_1, a_0, a_3, a_2)\) as input, and want calculate \[a' = (a_0 + a_1 + a_2 + a_3, a_0 - a_1 + a_2 - a_3, a_0 + a_1 - a_2 - a_3, a_0 - a_1 - a_2 + a_3).\]
+As a reminder, this is what is needed to calculate the upper left quarter in the loop of the simple implementation.
+<code>wht4x4()</code> calculates \(a'\) in four steps.</p><p>First, we perform a permutation, where we swap the first half of the vector and the second half individually.
+This is needed, because we need to somehow &ldquo;move&rdquo; an \(a_1\) to the beginning of the vector, and a \(a_0\) to the second entry of the vector.
+The same holds for \(a_2\) and \(a_3\) respectively.</p><p>In the second step, two arithmetic operations are performed in a single FMA instruction.
+FMA allows for a multiplication followed by an addition in a single instruction.
+But it only comes at the cost of a multiplication, so it can give really good performance boosts.</p><p>What does this FMA do then?
+It takes the vector we got from the first step, multiplies it with <code>amam</code>, and adds it to the input vector.
+<code>amam</code> contains the values \((1, -1, 1, -1)\), so the step results in the vector \[(a_0 + a_1, a_0 - a_1, a_2 + a_3, a_2 - a_3).\]
+With that, we&rsquo;re practically already halfway done with calculating \(a'\).</p><p>In the next step, we take the vector that was just retrieved, and swap the lower half with the upper half, which gives \[(a_2 + a_3, a_2 - a_3, a_0 + a_1, a_0 - a_1).\]</p><p>Finally, we use another FMA to combine the two vectors from the previous steps.
+This time we make use of the constant <code>aamm</code>, which contains the values \((1, 1, -1, -1)\).
+And there we have \(a'\).</p><p>Note that the constants <code>amam</code> and <code>aamm</code> are only defined once in the beginning.
+The compiler <em>might</em> optimize this on its own, but you never know.</p><p>Further, instead of multiplying the columns <code>a</code> and <code>c</code> depending on the iterating variable <code>i</code>, we explicitly increment them by the column size in each iteration.
+This is called <a href=https://en.wikipedia.org/wiki/Strength_reduction>strength reduction</a>.
+Usually, compilers will do these kinds of optimizations on their own, but in complex cases they might not.
+This is why I opted to explicitly tell the compiler to use additions here.</p><p>So what does our black box say after all these little optimizations.
+We&rsquo;ve reached 4.9 flops per second.
+That&rsquo;s a performance speedup of over 8x!</p><h2 id=composed-or-decomposed>Composed or decomposed?<a href=#composed-or-decomposed class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>Is there anything left to optimize that&rsquo;s &ldquo;easily&rdquo; approachable?</p><p>So far I&rsquo;ve only told half the story, because in fact I read the assignment the wrong way.
+We were supposed to calculate the transform in three steps.</p><p>The matrix can actually be decomposed so that \(H_8 = T_3 \cdot T_2 \cdot T_1\).
+In full verbosity, here are the complete matrices for that.</p><p>\[
+T_1 =
+\begin{bmatrix}
+1 & & & & 1 & & & \\<br>& 1 & & & & 1 & & \\<br>& & 1 & & & & 1 & \\<br>& & & 1 & & & & 1 \\<br>1 & & & & -1 & & & \\<br>& 1 & & & & -1 & & \\<br>& & 1 & & & & -1 & \\<br>& & & 1 & & & & -1
+\end{bmatrix}
+\quad
+T_2 =
+\begin{bmatrix}
+1 & & 1 & & & & & \\<br>& 1 & & 1 & & & & \\<br>1 & & -1 & & & & & \\<br>& 1 & & -1 & & & & \\<br>& & & & 1 & & 1 & \\<br>& & & & & 1 & & 1 \\<br>& & & & 1 & & -1 & \\<br>& & & & & 1 & & -1
+\end{bmatrix}
+\quad
+T_3 =
+\begin{bmatrix}
+1 & 1 & & & & & & \\<br>1 & -1 & & & & & & \\<br>& & 1 & 1 & & & & \\<br>& & 1 & -1 & & & & \\<br>& & & & 1 & 1 & & \\<br>& & & & 1 & -1 & & \\<br>& & & & & & 1 & 1 \\<br>& & & & & & 1 & -1
+\end{bmatrix}
+\]</p><p>Note that the spaces are filled with zeros, it&rsquo;s just a lot more readable this way.
+If you multiply these matrices by hand as given above, you will get the exact \(H_8\) which was introduced in the beginning.</p><p>So let&rsquo;s try to implement this.
+This time we have three different transformations.
+Luckily, we&rsquo;ll encounter the same patterns as in the first SIMD implementation.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span><span class=lnt>86
+</span><span class=lnt>87
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=kt>void</span> <span class=nf>wht_decomposed_vectors</span><span class=p>(</span><span class=kt>double</span><span class=o>*</span> <span class=n>A</span><span class=p>,</span> <span class=kt>double</span><span class=o>*</span> <span class=n>C</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>aamm</span> <span class=o>=</span> <span class=n>_mm256_set_pd</span><span class=p>(</span><span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>);</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>amam</span> <span class=o>=</span> <span class=n>_mm256_set_pd</span><span class=p>(</span><span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>);</span>
+
+    <span class=kt>double</span> <span class=o>*</span><span class=n>a</span> <span class=o>=</span> <span class=n>A</span><span class=p>;</span>
+    <span class=kt>double</span> <span class=o>*</span><span class=n>c</span> <span class=o>=</span> <span class=n>C</span><span class=p>;</span>
+
+    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+
+    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>MR</span> <span class=o>-</span> <span class=mi>4</span><span class=p>;</span> <span class=n>i</span> <span class=o>+=</span> <span class=mi>4</span><span class=p>)</span> <span class=p>{</span>
+        <span class=c1>// Load the input rows.
+</span><span class=c1></span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a0l</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>0</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a0h</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>0</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a1l</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a1h</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a2l</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a2h</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a3l</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>3</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a3h</span> <span class=o>=</span> <span class=n>_mm256_load_pd</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=p>(</span><span class=mi>3</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>);</span>
+
+        <span class=c1>// Apply the first transformation.
+</span><span class=c1></span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c00l</span> <span class=o>=</span> <span class=n>transform1a</span><span class=p>(</span><span class=n>a0l</span><span class=p>,</span> <span class=n>a0h</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c00h</span> <span class=o>=</span> <span class=n>transform1b</span><span class=p>(</span><span class=n>a0l</span><span class=p>,</span> <span class=n>a0h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c01l</span> <span class=o>=</span> <span class=n>transform1a</span><span class=p>(</span><span class=n>a1l</span><span class=p>,</span> <span class=n>a1h</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c01h</span> <span class=o>=</span> <span class=n>transform1b</span><span class=p>(</span><span class=n>a1l</span><span class=p>,</span> <span class=n>a1h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c02l</span> <span class=o>=</span> <span class=n>transform1a</span><span class=p>(</span><span class=n>a2l</span><span class=p>,</span> <span class=n>a2h</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c02h</span> <span class=o>=</span> <span class=n>transform1b</span><span class=p>(</span><span class=n>a2l</span><span class=p>,</span> <span class=n>a2h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c03l</span> <span class=o>=</span> <span class=n>transform1a</span><span class=p>(</span><span class=n>a3l</span><span class=p>,</span> <span class=n>a3h</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c03h</span> <span class=o>=</span> <span class=n>transform1b</span><span class=p>(</span><span class=n>a3l</span><span class=p>,</span> <span class=n>a3h</span><span class=p>);</span>
+
+        <span class=c1>// Apply the second transformation.
+</span><span class=c1></span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c10l</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c00l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c10h</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c00h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c11l</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c01l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c11h</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c01h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c12l</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c02l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c12h</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c02h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c13l</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c03l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c13h</span> <span class=o>=</span> <span class=n>transform2</span><span class=p>(</span><span class=n>aamm</span><span class=p>,</span> <span class=n>c03h</span><span class=p>);</span>
+
+        <span class=c1>// Apply the third transformation.
+</span><span class=c1></span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c20l</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c10l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c20h</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c10h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c21l</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c11l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c21h</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c11h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c22l</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c12l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c22h</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c12h</span><span class=p>);</span>
+
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c23l</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c13l</span><span class=p>);</span>
+        <span class=k>const</span> <span class=n>__m256d</span> <span class=n>c23h</span> <span class=o>=</span> <span class=n>transform3</span><span class=p>(</span><span class=n>amam</span><span class=p>,</span> <span class=n>c13h</span><span class=p>);</span>
+
+        <span class=c1>// Write the output rows.
+</span><span class=c1></span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>0</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>,</span> <span class=n>c20l</span><span class=p>);</span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>0</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>,</span> <span class=n>c20h</span><span class=p>);</span>
+
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>,</span> <span class=n>c21l</span><span class=p>);</span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>,</span> <span class=n>c21h</span><span class=p>);</span>
+
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>,</span> <span class=n>c22l</span><span class=p>);</span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>,</span> <span class=n>c22h</span><span class=p>);</span>
+
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>3</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>0</span><span class=p>,</span> <span class=n>c23l</span><span class=p>);</span>
+        <span class=n>_mm256_store_pd</span><span class=p>(</span><span class=n>c</span> <span class=o>+</span> <span class=p>(</span><span class=mi>3</span> <span class=o>*</span> <span class=n>NR</span><span class=p>)</span> <span class=o>+</span> <span class=mi>4</span><span class=p>,</span> <span class=n>c23h</span><span class=p>);</span>
+
+        <span class=c1>// Adjust the pointers for the next four rows.
+</span><span class=c1></span>
+        <span class=n>a</span> <span class=o>+=</span> <span class=mi>4</span> <span class=o>*</span> <span class=n>NR</span><span class=p>;</span>
+        <span class=n>c</span> <span class=o>+=</span> <span class=mi>4</span> <span class=o>*</span> <span class=n>NR</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>Woah, that looks complicated!
+Except that it&rsquo;s not!
+Let me explain what this does.</p><p>Again, first we define two constants as before.
+Then, the loop will increment in steps of four this time, because we will process four rows at once.
+The reason for this will become clear in just a moment.</p><p>In the loop, we first load the four rows from <code>A</code>.
+On each row, we apply the three different transformations \(T_1\), \(T_2\), and \(T_3\) in that order.
+Afterwards, all four vectors are stored into <code>C</code>.</p><p>The pattern is similar to our last implementation, except that this time</p><ul><li>we process more rows in parallel, and</li><li>the transformation is split into three steps.</li></ul><p>Note that in the code above, we need to take into account that the amount of rows in our input vector is not divisible by four.
+I omitted the code for handling this in the snippet, but I&rsquo;ll reference the full code in the end of the post.</p><h2 id=three-missing-pieces>Three missing pieces<a href=#three-missing-pieces class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>Now, the only thing left to understand is how each transformation is computed.
+Let&rsquo;s start with the first transformation.</p><p>\(T_1\) is relatively simple.
+If you&rsquo;re not that familiar with matrix multiplication, here is what the transformation does for \(x \in \mathbb{R}^8\).
+\[
+T_1 \cdot x =
+\begin{bmatrix}
+x_0 + x_4 \\<br>x_1 + x_5 \\<br>x_2 + x_6 \\<br>x_3 + x_7 \\<br>x_0 - x_4 \\<br>x_1 - x_5 \\<br>x_2 - x_6 \\<br>x_3 - x_7
+\end{bmatrix}
+\]
+More informally speaking, the lower half of the output is just the higher four doubles added to the lower ones, and the upper half is the higher four doubles subtracted from the lower ones.
+This is exactly what <code>_mm256_add_pd()</code> and <code>_mm256_sub_pd()</code> do!
+For both functions I introduced a wrapper with an appropriate name.
+Since the functions will be inlined, the performance is not affected by this.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=k>const</span> <span class=kr>inline</span> <span class=n>__m256d</span> <span class=nf>transform1a</span><span class=p>(</span><span class=n>__m256d</span> <span class=n>a</span><span class=p>,</span> <span class=n>__m256d</span> <span class=n>b</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ret</span> <span class=o>=</span> <span class=n>_mm256_add_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>b</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>ret</span><span class=p>;</span>
+<span class=p>}</span>
+
+<span class=k>static</span> <span class=k>const</span> <span class=kr>inline</span> <span class=n>__m256d</span> <span class=nf>transform1b</span><span class=p>(</span><span class=n>__m256d</span> <span class=n>a</span><span class=p>,</span> <span class=n>__m256d</span> <span class=n>b</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ret</span> <span class=o>=</span> <span class=n>_mm256_sub_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>b</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>ret</span><span class=p>;</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>Next up is the second transformation.
+Again, let me show you what we need to calculate.
+\[
+T_2 \cdot x =
+\begin{bmatrix}
+x_0 + x_2 \\<br>x_1 + x_3 \\<br>x_0 - x_2 \\<br>x_1 - x_3 \\<br>x_4 + x_6 \\<br>x_5 + x_7 \\<br>x_4 - x_6 \\<br>x_5 - x_7
+\end{bmatrix}
+\]</p><p>Do you see how the first half of that vector is arithmetically independent from the second half, and their arithmetic patterns are the same?
+This means we can write a single function that operates only on one half.</p><p>We can use the same permutation that we used to swap the halves of the vector in the first SIMD implementation.
+This is then followed by the very same FMA instruction we also used before.
+In fact, this is functionally half of the <code>wht4x4()</code> function we discussed above.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=k>const</span> <span class=kr>inline</span> <span class=n>__m256d</span> <span class=nf>transform2</span><span class=p>(</span><span class=k>const</span> <span class=n>__m256d</span> <span class=n>aamm</span><span class=p>,</span> <span class=n>__m256d</span> <span class=n>a</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=c1>// [a2, a3, a0, a1]
+</span><span class=c1></span>    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a2301</span> <span class=o>=</span> <span class=n>_mm256_permute2f128_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>a</span><span class=p>,</span> <span class=mb>0b00000001</span><span class=p>);</span>
+
+    <span class=c1>// [a0 + a2, a1 + a3, a0 - a2, a1 - a3]
+</span><span class=c1></span>    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ret</span> <span class=o>=</span> <span class=n>_mm256_fmadd_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>aamm</span><span class=p>,</span> <span class=n>a2301</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>ret</span><span class=p>;</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>Lastly, with the third transformation it is kind of the same deal.
+This is just the other half of the <code>wht4x4()</code> function.
+For completeness, here is the calculation in vector form.
+\[
+T_3 \cdot x =
+\begin{bmatrix}
+x_0 + x_1 \\<br>x_0 - x_1 \\<br>x_2 + x_3 \\<br>x_2 - x_3 \\<br>x_4 + x_5 \\<br>x_4 - x_5 \\<br>x_6 + x_7 \\<br>x_6 - x_7
+\end{bmatrix}
+\]</p><p>Again, both halves can be calculated independently.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-cpp data-lang=cpp><span class=k>static</span> <span class=k>const</span> <span class=kr>inline</span> <span class=n>__m256d</span> <span class=nf>transform3</span><span class=p>(</span><span class=k>const</span> <span class=n>__m256d</span> <span class=n>amam</span><span class=p>,</span> <span class=n>__m256d</span> <span class=n>a</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=c1>// [a1, a0, a3, a2]
+</span><span class=c1></span>    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>a1032</span> <span class=o>=</span> <span class=n>_mm256_permute_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=mb>0b0101</span><span class=p>);</span>
+
+    <span class=c1>// [a0 + a1, a0 - a1, a2 + a3, a2 - a3]
+</span><span class=c1></span>    <span class=k>const</span> <span class=n>__m256d</span> <span class=n>ret</span> <span class=o>=</span> <span class=n>_mm256_fmadd_pd</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>amam</span><span class=p>,</span> <span class=n>a1032</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>ret</span><span class=p>;</span>
+<span class=p>}</span>
+</code></pre></td></tr></table></div></div><p>So did this pay off?
+Oh yes, it did!
+With a performance of 5.6 flops per second, we achieved a speedup of over 9x compared to the simple version from the beginning.</p><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor><i class="fas fa-link fa-xs ms-2"></i></a></h2><p>This is where I left it.
+I&rsquo;m pretty sure there are plenty things one could have done better, but I was satisfied with the performance.
+You can find the complete source code <a href=https://gist.github.com/eikendev/bcadad1df680cc8b96d4e2ec99e556d2>on GitHub as a Gist</a>.</p><p>For a nice overview, I visualized the difference in performance for all three approaches we discussed.
+I&rsquo;ve also added a fourth measurement where I decomposed the vectors, but didn&rsquo;t apply any vectorization.
+Interestingly, it gives a nice speedup as well.</p><div class="mx-auto overflow-auto" style=position:relative;height:400px;max-width:800px><canvas class=mx-auto id=chart-performance style=width:100%></canvas></div><script src=performance.js data-name=chart-performance defer></script><section class=footnotes role=doc-endnotes><hr><ol><li id=fn:1 role=doc-endnote><p>After writing this blog post, I found <a href=https://en.wikipedia.org/wiki/Fast_Walsh%E2%80%93Hadamard_transform>this</a> article on Wikipedia about an efficient algorithm to compute the Walsh-Hadamard transform.&#160;<a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li></ol></section></article><div class=mt-5><div class="row row-cols-2 justify-content-center"><div class="col-12 col-lg-8"><div class="card shadow-sm"><div class=card-body><h5 class="text-center mb-3">If you liked this article, share it with your friends!</h5><div class="row justify-content-center mb-3"><a class="btn btn-primary m-1 col-auto mr-clear-lastchild" href="https://twitter.com/intent/tweet?url=https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/&text=Optimizing%20the%20Walsh-Hadamard%20Transform%20Using%20SIMD%20Intrinsics" target=_blank title=Twitter><i class="fab fa-twitter me-2"></i>Twitter</a>
+<a class="btn btn-secondary m-1 col-auto mr-clear-lastchild" href="https://www.reddit.com/submit?url=https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/&title=Optimizing%20the%20Walsh-Hadamard%20Transform%20Using%20SIMD%20Intrinsics" target=_blank title=Reddit><i class="fab fa-reddit-alien me-2"></i>Reddit</a>
+<a class="btn btn-secondary m-1 col-auto mr-clear-lastchild" href="https://news.ycombinator.com/submitlink?u=https://www.eiken.dev/blog/2020/04/optimizing-the-walsh-hadamard-transform-using-simd-intrinsics/&t=Optimizing%20the%20Walsh-Hadamard%20Transform%20Using%20SIMD%20Intrinsics" target=_blank title="Hacker News"><i class="fab fa-hacker-news me-2"></i>Hacker News</a></div><div class=text-center>Never miss new content by following me on <a href=https://twitter.com/eikendev>Twitter</a> and subscribing to my <a href=/index.xml>feed</a>.</div></div></div></div></div><div class="mx-auto mt-5 text-center"><a class="text-reset text-decoration-none" href=https://www.eiken.dev/blog/2020/03/how-to-deploy-your-hugo-site-with-travis-ci/><div>Previous: <i>How to Deploy Your Hugo Site With Travis CI</i></div></a><a class="text-reset text-decoration-none" href=https://www.eiken.dev/blog/2020/09/recent-developments-in-control-flow-integrity/><div>Next: <i>Recent Developments in Control-Flow Integrity</i></div></a></div></div></div></section></main><footer class="footer mt-auto py-3 bg-darkgray5"><div class=container><div class="row justify-content-center mb-3"><a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=https://eikenberg.at/ title=eikenberg.at><i class="fas fa-globe-europe me-2"></i>eikenberg.at</a>
+<a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=/index.xml title=Feed><i class="fas fa-rss me-2"></i>Feed</a>
+<a class="my-1 me-3 col-auto mr-clear-lastchild text-white" href=https://creativecommons.org/licenses/by/4.0/ title="Attribution 4.0 International (CC BY 4.0)"><i class="fab fa-creative-commons me-2"></i>License</a></div><p class="text-center text-muted mb-clear-lastchild"><small>Copyright © eikendev</small></p></div></footer><script src=https://www.eiken.dev/js/bundle.min.0487f405ed8aa6a2cfa14777084a79f60414a1780ae2901d6ba3cc570f1b61f883b040b05fe6ad64ad2ae83fd31422f4.js integrity=sha384-BIf0Be2KpqLPoUd3CEp59gQUoXgK4pAda6PMVw8bYfiDsECwX+atZK0q6D/TFCL0 crossorigin=anonymous></script><script src=https://www.eiken.dev/js/chart.min.4c296bf51a5b17293173bed792e2525ebf0bfe65a145e7e1b7142d9966d6af4248f1d357ebfea074da0a34980d4c2700.js integrity=sha384-TClr9RpbFykxc77XkuJSXr8L/mWhRefhtxQtmWbWr0JI8dNX6/6gdNoKNJgNTCcA crossorigin=anonymous></script><script defer src=https://www.eiken.dev/js/bundle-deferred.min.dd05ace8270e13a509dd103ff21f93b9b79af9eae7e27127b90ed2a1bebf1ecf58915717871597371683b0996860cc07.js integrity=sha384-3QWs6CcOE6UJ3RA/8h+Tubea+ern4nEnuQ7Sob6/Hs9YkVcXhxWXNxaDsJloYMwH crossorigin=anonymous></script><script defer src=https://www.eiken.dev/js/mathjax.min.a58b1a1f2e67909753b88e73bf8aa177c58ba3a544751d11277575d88df8f2d01ed2face9ca7e28bf41208b011e08cb5.js integrity=sha384-pYsaHy5nkJdTuI5zv4qhd8WLo6VEdR0RJ3V12I348tAe0vrOnKfii/QSCLAR4Iy1 crossorigin=anonymous></script></body></html>
